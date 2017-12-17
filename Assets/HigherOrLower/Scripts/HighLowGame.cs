@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class HighLowGame : MonoBehaviour {
@@ -11,10 +13,24 @@ public class HighLowGame : MonoBehaviour {
 
     public Button ButtonLeft, ButtonMid, ButtonRight;
 
-    public int Level, Stage, Round, Points;
+    public int Round;
+
+    public UnityEvent OnRoundStart;
+    public UnityEvent OnRoundEnd;
+    public UnityEvent OnStageStart;
+    public UnityEvent OnStageEnd;
+
+
+    private GamePlayer PlayerData = new GamePlayer();
 
     private void Start()
     {
+        PlayerData.Pull();
+        PlayerData.Wipe();// for debugging until the ui is done
+        if (PlayerData.Level == 0) PlayerData.Level = 1;
+        if (PlayerData.Stage == 0) PlayerData.Stage = 1;
+        PlayerData.Push();
+        GameProgression.InitStageSetups();
         //GameLoop();
     }
 
@@ -37,15 +53,16 @@ public class HighLowGame : MonoBehaviour {
 
     IEnumerator GameLoop()
     {
-        //yield return StartCoroutine(Instructions());
+        yield return StartCoroutine(Instructions());
         bool exit = false;
         ClearButtonState();
         while (!exit)
         {
-            LcdWrite(string.Format("Stage: {0}", Stage), "Hit Enter to go!");
+            LcdWrite(string.Format("Stage: {0}", PlayerData.Stage), "Hit Enter to go!");
             switch (_buttonState)
             {
                 case ButtonState.MID:
+                    ClearButtonState();
                     Round = 1;
                     yield return StartCoroutine(Game());
                     break;
@@ -71,7 +88,7 @@ public class HighLowGame : MonoBehaviour {
 
     private IEnumerator StageFailed()
     {
-        LcdWrite(string.Format("Stage {0}", Stage), "Failed");
+        LcdWrite(string.Format("Stage {0}", PlayerData.Stage), "Failed");
         yield return new WaitForSeconds(2);
         LcdWrite("Try", "Again!");
         yield return new WaitForSeconds(2);
@@ -79,7 +96,7 @@ public class HighLowGame : MonoBehaviour {
 
     private IEnumerator StageQuit()
     {
-        LcdWrite(string.Format("Stage {0}", Stage), "Exiting");
+        LcdWrite(string.Format("Stage {0}", PlayerData.Stage), "Exiting");
         yield return new WaitForSeconds(2);
         LcdWrite("Returning to", "Menu");
         yield return new WaitForSeconds(2);
@@ -89,11 +106,11 @@ public class HighLowGame : MonoBehaviour {
     {
         LcdWrite("Stage", "Complete!");
         yield return new WaitForSeconds(2);
-        LcdWrite("You earned", string.Format("{0} Points", Points));
+        LcdWrite("You earned", string.Format("{0} Points", earedPoints));
         yield return new WaitForSeconds(2);
-        LcdWrite("You have", string.Format("{0} Points", Points));
+        LcdWrite("You have", string.Format("{0} Points", PlayerData.Points));
         yield return new WaitForSeconds(2);
-        LcdWrite("You are", string.Format("Level {0}", Level));
+        LcdWrite("You are", string.Format("Level {0}", PlayerData.Level));
         yield return new WaitForSeconds(2);
     }
 
@@ -102,46 +119,51 @@ public class HighLowGame : MonoBehaviour {
     private IEnumerator Game()
     {
         var playingRound = true;
+        OnStageStart.Invoke();
         while (playingRound)
         {
-
-            var high = Random.value > .5f;
-            var multiplier = high ? -1 : 1;
-
-            int baseValue = 0;
-            int wrongValue = 0;
-            do
+            var roundData = GameProgression.GetRound(PlayerData.Level, PlayerData.Stage, Round, LED1.LEDArraySize);
+            OnRoundStart.Invoke();
+            if (Round == 1)
             {
-                baseValue = Random.Range(1, 32);
-                var adjustment = Random.Range(5, 25) * multiplier;
-                wrongValue = baseValue + adjustment;
-            } while ((baseValue == 0 && wrongValue == 0));
-
-
-            var Led1Right = Random.value > .5f;
-            var highMessage = high ? "     HIGH!     " : "     LOW!     ";
-
-            int startX = Random.Range(0, LED1.LEDArraySize);
-            int startY = Random.Range(0, LED1.LEDArraySize);
-
-            ButtonState incorrectBtn, correctBtn;
-            if (Led1Right)
-            {
-                LEDRendering.Graph(LEDRendering.GraphType.Horizontal,LED1, startX, startY, baseValue);
-                LEDRendering.Graph(LEDRendering.GraphType.Horizontal, LED2, startX, startY, wrongValue, true);
-                correctBtn = ButtonState.LEFT;
-                incorrectBtn = ButtonState.RIGHT;
+                if (roundData.IntroText != null && roundData.IntroText.Any())
+                {
+                    int lastLcv = -1;
+                    for (int lcv = 0, length = roundData.IntroText.Count; lcv < length; lcv++)
+                    {
+                        string s1, s2;
+                        if (lastLcv < 0)
+                        {
+                            s1 = "";
+                        }
+                        else
+                        {
+                            s1 = roundData.IntroText[lastLcv];
+                        }
+                        s2 = roundData.IntroText[lcv];
+                        LcdWrite(s1, s2);
+                        lastLcv++;
+                        yield return new WaitForSeconds(2f);
+                    }
+                    yield return new WaitForSeconds(2f);
+                }
             }
-            else
-            {
-                LEDRendering.Graph(LEDRendering.GraphType.Horizontal, LED2, startX, startY, baseValue);
-                LEDRendering.Graph(LEDRendering.GraphType.Horizontal, LED1, startX, startY, wrongValue, true);
-                correctBtn = ButtonState.RIGHT;
-                incorrectBtn = ButtonState.LEFT;
-            }
-            var waitSeconds = 5f;
+
+            var highMessage = roundData.High ? "     HIGHER!   " : "     LOWER!   ";
+            ButtonState correctBtn = roundData.Led1Right ? ButtonState.LEFT : ButtonState.RIGHT;
+            ButtonState incorrectBtn = correctBtn == ButtonState.LEFT ? ButtonState.RIGHT : ButtonState.LEFT;
+            LEDRendering.Graph(roundData.LEDInfo[0].graphType, LED1, 
+                roundData.LEDInfo[0].StartX, roundData.LEDInfo[0].StartY, 
+                roundData.LEDInfo[0].Count,
+                roundData.LEDInfo[0].InvertX, roundData.LEDInfo[0].InvertY);
+
+            LEDRendering.Graph(roundData.LEDInfo[1].graphType, LED2,
+                roundData.LEDInfo[1].StartX, roundData.LEDInfo[1].StartY,
+                roundData.LEDInfo[1].Count,
+                roundData.LEDInfo[1].InvertX, roundData.LEDInfo[1].InvertY);
+
             float startTime = Time.time;
-            var currentSeconds = waitSeconds;
+            var currentSeconds = roundData.WaitSeconds;
             var loop = true;
             ClearButtonState();
             var _gameState = FinishState.None;
@@ -149,7 +171,7 @@ public class HighLowGame : MonoBehaviour {
             while (loop)
             {
                 currentSeconds = Time.time - startTime;
-                float progress = currentSeconds / waitSeconds;
+                float progress = currentSeconds / roundData.WaitSeconds;
                 progressDashCount = 16 - (Mathf.RoundToInt(16 * progress));
                 var progressMessage = progressDashCount > 0 ? new string('-', progressDashCount) : "";
                 LcdWrite(highMessage, progressMessage);
@@ -159,9 +181,14 @@ public class HighLowGame : MonoBehaviour {
                     _gameState = FinishState.Timeout;
                     continue;
                 }
-                if (_buttonState == correctBtn)
+                if (_buttonState == ButtonState.MID)
                 {
-                    //right
+                    Debug.Log("exit");
+                    loop = false;
+                    _gameState = FinishState.Quit;
+                }
+                else if (_buttonState == correctBtn)
+                {
                     Debug.Log("right");
                     loop = false;
                     _gameState = FinishState.Right;
@@ -171,12 +198,6 @@ public class HighLowGame : MonoBehaviour {
                     Debug.Log("wrong");
                     loop = false;
                     _gameState = FinishState.Wrong;
-                }
-                else if (_buttonState == ButtonState.MID)
-                {
-                    Debug.Log("exit");
-                    loop = false;
-                    _gameState = FinishState.Quit;
                 }
                 yield return null;
             }
@@ -189,12 +210,19 @@ public class HighLowGame : MonoBehaviour {
                     var earnedPoints = 100;
                     earnedPoints += (progressDashCount * 20);
                     Round++;
-                    if (Round > 10) // TODO: make variable for max rounds
+                    if (Round > GameProgression.ROUND_COUNT) // TODO: make variable for max rounds
                     {
-                        Stage++;
+                        PlayerData.Stage++;
+                        if (PlayerData.Stage > GameProgression.STAGE_COUNT)
+                        {
+                            PlayerData.Level++;
+                            earnedPoints += 5000;
+                            PlayerData.Stage = 1;
+                        }
                         earnedPoints += 1000;
                         playingRound = false;
-                        Points += earnedPoints;
+                        PlayerData.Points += earnedPoints;
+                        PlayerData.Push();
                         yield return StartCoroutine(StageComplete(earnedPoints));
                     }
                     break;
@@ -214,7 +242,9 @@ public class HighLowGame : MonoBehaviour {
                     yield return StartCoroutine(StageQuit());
                     break;
             }
+            OnRoundEnd.Invoke();
         }
+        OnStageEnd.Invoke();
         yield return null;
     }
 
