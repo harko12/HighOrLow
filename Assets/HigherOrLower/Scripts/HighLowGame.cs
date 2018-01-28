@@ -12,7 +12,6 @@ public class HighLowGame : MonoBehaviour {
     public Text Line1, Line2;
 
     public Button ButtonLeft, ButtonMid, ButtonRight;
-
     public int Round;
 
     public UnityEvent OnRoundStart;
@@ -20,6 +19,8 @@ public class HighLowGame : MonoBehaviour {
     public UnityEvent OnStageStart;
     public UnityEvent OnStageEnd;
 
+    public ProgressionPanel ProgressPanel;
+    public GameStageContainer Levels;
 
     private GamePlayer PlayerData = new GamePlayer();
 
@@ -30,8 +31,8 @@ public class HighLowGame : MonoBehaviour {
         if (PlayerData.Level == 0) PlayerData.Level = 1;
         if (PlayerData.Stage == 0) PlayerData.Stage = 1;
         PlayerData.Push();
-        GameProgression.InitStageSetups();
-        //GameLoop();
+        GameProgression.InitGameProgression(this.Levels);
+        ProgressPanel.Init(this.Levels);
     }
 
     private void OnEnable()
@@ -49,6 +50,11 @@ public class HighLowGame : MonoBehaviour {
     public void ClearButtonState() // really just clears the buttons
     {
         _buttonState = ButtonState.NONE;
+    }
+
+    public GamePlayer Getplayer()
+    {
+        return PlayerData;
     }
 
     IEnumerator GameLoop()
@@ -70,6 +76,11 @@ public class HighLowGame : MonoBehaviour {
             yield return new WaitForSeconds(.5f);
         }
         yield return null;
+    }
+
+    public void ResetGameLoop()
+    {
+        //StopCoroutine(Game());  // should 
     }
 
     private IEnumerator Instructions()
@@ -212,7 +223,7 @@ public class HighLowGame : MonoBehaviour {
                     Round++;
                     if (Round > GameProgression.ROUND_COUNT) // TODO: make variable for max rounds
                     {
-                        PlayerData.Stage++;
+                        //PlayerData.Stage++;  // for now, let's not auto progress the stage.
                         if (PlayerData.Stage > GameProgression.STAGE_COUNT)
                         {
                             PlayerData.Level++;

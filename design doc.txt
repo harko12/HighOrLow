@@ -1,0 +1,11 @@
+Rounds -> increase speed
+Stages -> add new screen types and variations
+Levels -> decrease gap between right and wrong, increase chance of higher or lower
+
+add time modes -> start fresh every round, add surplus to next round, survival(no repleneshment between rounds)
+
+add different shapes / colors for more difficulty
+
+add rumble if applicable
+
+add sounds

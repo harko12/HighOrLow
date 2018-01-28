@@ -37,7 +37,7 @@ public class GameProgression {
         return val < (weight + (round * .1f));
     }
 
-    private static GameRoundLEDInfo GetLEDInfo(GameStageSetup rules, int round, int count, int arraySize, bool isCorrect)
+    private static GameRoundLEDInfo GetLEDInfo(GameStage rules, int round, int count, int arraySize, bool isCorrect)
     {
         var li = new GameRoundLEDInfo();
         li.StartX = 0;
@@ -62,9 +62,23 @@ public class GameProgression {
             li.InvertY = true;
         }
 
-        if (rules.LEDStyleWeights.Count == 1)
+        if (rules.LEDStyleWeights.Length == 1)
         {
-            li.graphType = rules.LEDStyleWeights.First().Key;
+            li.graphType = rules.LEDStyleWeights[0].GraphType;
+        }
+        else
+        {
+            float val = Random.value;
+            var w = 0f;
+            for(int lcv = 0, length = rules.LEDStyleWeights.Length; lcv < length; lcv++)
+            {
+                w += rules.LEDStyleWeights[lcv].Weight;
+                if (w > val)
+                {
+                    li.graphType = rules.LEDStyleWeights[lcv].GraphType;
+                    break;
+                }
+            }
         }
         li.Count = count;
         return li;
@@ -108,227 +122,39 @@ public class GameProgression {
         return roundData;
     }
 
-    private static GameStageSetup GetRules(int lvl, int stage, out bool exactMatch)
+    private static GameStageContainer mGameLevels;
+    public static void InitGameProgression(GameStageContainer stages)
     {
-        GameStageSetup gs = null;
-        Dictionary<int, GameStageSetup> levelDict = null;
-        var done = false;
+        mGameLevels = stages;
+    }
+
+    private static GameStage GetRules(int lvl, int stage, out bool exactMatch)
+    {
+
+        GameStage s = null;
         exactMatch = true;
-        var targetLvl = lvl;
-        var targetStage = stage;
-        while (!done)
-        {
-            if(StageDirections.TryGetValue(targetLvl, out levelDict))
-            {
-                while (targetStage > 0)
-                {
-                    if (!levelDict.TryGetValue(targetStage, out gs))
-                    {
-                        targetStage--;
-                        exactMatch = false;
-                        continue;
-                    }
-                    return gs;
-                }
-                targetLvl--;
-                targetStage = STAGE_COUNT;
-                exactMatch = false;
-                continue;
-            }
-            else
-            {
-                targetLvl--;
-                targetStage = STAGE_COUNT;
-                exactMatch = false;
-            }
 
-            if (targetLvl <= 0)
+        var lvlIndex = lvl - 1;
+        var stageIndex = stage - 1;
+
+        if (mGameLevels.Levels.Length >= lvl)
+        {
+            var l = mGameLevels.Levels[lvlIndex];
+            if (l.Stages.Length >= stage)
             {
-                done = true;
+                s = l.Stages[stageIndex];
             }
         }
-        return null;
+        return s;
     }
 
-    #region GameStageSetup
-    public static Dictionary<int, Dictionary<int, GameStageSetup>> StageDirections =
-        new Dictionary<int, Dictionary<int, GameStageSetup>>();
-
-    public class GameStageSetup
+    [System.Serializable]
+    public class GameStageLEDStyleWeight
     {
-        public int Level { get; set; }
-        public int Stage { get; set; }
-        public string Title { get; set; }
-        public int MaxValue { get; set; }
-        public float WaitSeconds { get; set; }
-        public int VarianceMax { get; set; }
-        public int VarianceMin { get; set; }
-        /// <summary>
-        /// Weight to determine the mix of what is asked for, 
-        /// higher or lower.  0f for all lower, 100f for all higher
-        /// </summary>
-        public float HighLowWeight { get; set; }
-        public List<string> IntroText;
-        public Dictionary<LEDRendering.GraphType, float> LEDStyleWeights;
-        public float InvertXWeight { get; set; }
-        public float InvertYWeight { get; set; }
-        public bool LockLeftSide { get; set; }
-        public float StartXWeight { get; set; }
-        public float StartYWeight { get; set; }
-
-        public GameStageSetup()
-        {
-            IntroText = new List<string>();
-            LEDStyleWeights = new Dictionary<LEDRendering.GraphType, float>();
-            // some defaults
-            MaxValue = 32;
-            VarianceMax = 25;
-            VarianceMin = 5;
-            LockLeftSide = true;
-        }
+        [SerializeField]
+        public LEDRendering.GraphType GraphType;
+        [SerializeField]
+        public float Weight;
     }
 
-    private static void AddStageSetup(GameStageSetup gs)
-    {
-        if (!StageDirections.ContainsKey(gs.Level))
-        {
-            StageDirections.Add(gs.Level, new Dictionary<int, GameStageSetup>());
-        }
-        StageDirections[gs.Level].Add(gs.Stage, gs);
-    }
-
-    public static void InitStageSetups()
-    {
-        //1-1
-        var gs = new GameStageSetup()
-        {
-            Level = 1,
-            Stage = 1,
-            Title = "Learning Horizontal",
-            WaitSeconds = 10f,
-            HighLowWeight = 1f,
-            InvertXWeight = 0f,
-            InvertYWeight = 0f,
-            StartXWeight = 0f,
-            StartYWeight = 0f,
-            IntroText = new List<string>()
-            {
-              //"               "
-                "Time to learn",
-                "a pattern..",
-                "Horizontal!",
-            },
-            LEDStyleWeights = new Dictionary<LEDRendering.GraphType, float>()
-            {
-                {LEDRendering.GraphType.Horizontal, 100f }
-            }
-        };
-        AddStageSetup(gs);
-
-        //1-2
-        gs = new GameStageSetup()
-        {
-            Level = 1,
-            Stage = 2,
-            Title = "Horizontal flip",
-            WaitSeconds = 10f,
-            HighLowWeight = 1f,
-            InvertXWeight = 1f,
-            InvertYWeight = 0f,
-            StartXWeight = 0f,
-            StartYWeight = 0f,
-            IntroText = new List<string>()
-            {
-              //"               "
-                "Mirror..",
-                ".. Mirror",
-                "On the Wall",
-            },
-            LEDStyleWeights = new Dictionary<LEDRendering.GraphType, float>()
-            {
-                {LEDRendering.GraphType.Horizontal, 100f }
-            }
-        };
-        AddStageSetup(gs);
-
-        //1-3
-        gs = new GameStageSetup()
-        {
-            Level = 1,
-            Stage = 3,
-            Title = "Vertical flip",
-            WaitSeconds = 10f,
-            HighLowWeight = 1f,
-            InvertXWeight = 0f,
-            InvertYWeight = 1f,
-            StartXWeight = 0f,
-            StartYWeight = 0f,
-            IntroText = new List<string>()
-            {
-              //"               "
-                "Sometimes",
-                "Up",
-                "Is Down",
-            },
-            LEDStyleWeights = new Dictionary<LEDRendering.GraphType, float>()
-            {
-                {LEDRendering.GraphType.Horizontal, 100f }
-            }
-        };
-        AddStageSetup(gs);
-
-        //1-4
-        gs = new GameStageSetup()
-        {
-            Level = 1,
-            Stage = 4,
-            Title = "learning vertical",
-            WaitSeconds = 10f,
-            HighLowWeight = 1f,
-            InvertXWeight = 0f,
-            InvertYWeight = 0f,
-            StartXWeight = 0f,
-            StartYWeight = 0f,
-            IntroText = new List<string>()
-            {
-              //"               "
-                "a new ",
-                "Pattern has its",
-                "ups and downs",
-            },
-            LEDStyleWeights = new Dictionary<LEDRendering.GraphType, float>()
-            {
-                {LEDRendering.GraphType.Vertical, 100f }
-            }
-        };
-        AddStageSetup(gs);
-
-        //1-5
-        gs = new GameStageSetup()
-        {
-            Level = 1,
-            Stage = 5,
-            Title = "vertical",
-            WaitSeconds = 10f,
-            HighLowWeight = 1f,
-            InvertXWeight = .5f,
-            InvertYWeight = .5f,
-            StartXWeight = 0f,
-            StartYWeight = 0f,
-            IntroText = new List<string>()
-            {
-              //"               "
-                " the flips ",
-                "are back",
-            },
-            LEDStyleWeights = new Dictionary<LEDRendering.GraphType, float>()
-            {
-                {LEDRendering.GraphType.Vertical, 100f }
-            }
-        };
-        AddStageSetup(gs);
-
-
-    }
-    #endregion
 }
