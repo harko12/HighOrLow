@@ -21,7 +21,12 @@ public class PlayerDebugPanel : MonoBehaviour {
 	
     public void InitPanelClicked()
     {
-        pPanel.Init(gameMaster.Levels);
+        pPanel.Init(gameMaster.Levels, mPlayer);
+    }
+
+    public void UpdatePanelClicked()
+    {
+        pPanel.UpdateStages(mPlayer);
     }
 
     public void UpdateInfo()

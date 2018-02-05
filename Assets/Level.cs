@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class Level : MonoBehaviour {
     public Text Title;
     public Transform StageAnchor;
+    public GameLevel LevelInfo { get; set; }
 
     public void Init(int level, string title = null)
     {

@@ -14,6 +14,7 @@ MonoBehaviour:
   Level: 1
   Stage: 8
   Title: Variations 2
+  PreReqPoints: 35000
   MaxValue: 32
   WaitSeconds: 5
   VarianceMax: 25

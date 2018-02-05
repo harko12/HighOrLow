@@ -7,8 +7,10 @@ using UnityEngine.UI;
 public class Stage : MonoBehaviour {
     public Image H, V, D, FlipX, FlipY, OffsetX, OffsetY;
     public Text StageNumber;
+    public StageLock mLock;
+    public GameStage StageInfo { get; set; }
 
-    public void Init(GameStage stage)
+    public void Init(GameStage stage, GamePlayer player)
     {
         StageNumber.text = stage.Stage.ToString();
         for (int lcv = 0, length = stage.LEDStyleWeights.Length; lcv < length; lcv++)
@@ -30,26 +32,40 @@ public class Stage : MonoBehaviour {
                     D.SetTransparency(weight);
                     break;
             }
-            if (stage.InvertXWeight > 0)
-            {
-                FlipX.gameObject.SetActive(true);
-                FlipX.SetTransparency(stage.InvertXWeight);
-            }
-            if (stage.InvertYWeight > 0)
-            {
-                FlipY.gameObject.SetActive(true);
-                FlipY.SetTransparency(stage.InvertYWeight);
-            }
-            if (stage.StartXWeight > 0)
-            {
-                OffsetX.gameObject.SetActive(true);
-                OffsetX.SetTransparency(stage.StartXWeight);
-            }
-            if (stage.StartYWeight > 0)
-            {
-                OffsetY.gameObject.SetActive(true);
-                OffsetY.SetTransparency(stage.StartYWeight);
-            }
+        }
+        if (stage.InvertXWeight > 0)
+        {
+            FlipX.gameObject.SetActive(true);
+            FlipX.SetTransparency(stage.InvertXWeight);
+        }
+        if (stage.InvertYWeight > 0)
+        {
+            FlipY.gameObject.SetActive(true);
+            FlipY.SetTransparency(stage.InvertYWeight);
+        }
+        if (stage.StartXWeight > 0)
+        {
+            OffsetX.gameObject.SetActive(true);
+            OffsetX.SetTransparency(stage.StartXWeight);
+        }
+        if (stage.StartYWeight > 0)
+        {
+            OffsetY.gameObject.SetActive(true);
+            OffsetY.SetTransparency(stage.StartYWeight);
+        }
+        UpdateStage(stage, player);
+    }
+
+    public void UpdateStage(GameStage stage, GamePlayer player)
+    {
+        if (player.Level < stage.Level
+             || (stage.PreReqPoints > 0 && player.wallet.Points < stage.PreReqPoints))
+        {
+            mLock.Lock();
+        }
+        else
+        {
+            mLock.Unlock();
         }
     }
 }

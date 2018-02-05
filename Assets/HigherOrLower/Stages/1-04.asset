@@ -14,6 +14,7 @@ MonoBehaviour:
   Level: 1
   Stage: 4
   Title: Learning Low
+  PreReqPoints: 15000
   MaxValue: 32
   WaitSeconds: 5
   VarianceMax: 25

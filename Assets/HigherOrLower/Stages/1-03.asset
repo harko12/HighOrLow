@@ -14,6 +14,7 @@ MonoBehaviour:
   Level: 1
   Stage: 3
   Title: Mix H and V
+  PreReqPoints: 10000
   MaxValue: 32
   WaitSeconds: 5
   VarianceMax: 25

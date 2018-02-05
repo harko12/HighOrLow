@@ -32,7 +32,14 @@ public class HighLowGame : MonoBehaviour {
         if (PlayerData.Stage == 0) PlayerData.Stage = 1;
         PlayerData.Push();
         GameProgression.InitGameProgression(this.Levels);
-        ProgressPanel.Init(this.Levels);
+        ProgressPanel.Init(this.Levels, PlayerData);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyUp(KeyCode.LeftArrow)) { SetButtonState(1); }
+        else if (Input.GetKeyUp(KeyCode.DownArrow)) { SetButtonState(2); }
+        else if (Input.GetKeyUp(KeyCode.RightArrow)) { SetButtonState(3); }
     }
 
     private void OnEnable()
@@ -59,7 +66,7 @@ public class HighLowGame : MonoBehaviour {
 
     IEnumerator GameLoop()
     {
-        yield return StartCoroutine(Instructions());
+        //yield return StartCoroutine(Instructions());
         bool exit = false;
         ClearButtonState();
         while (!exit)
@@ -119,7 +126,7 @@ public class HighLowGame : MonoBehaviour {
         yield return new WaitForSeconds(2);
         LcdWrite("You earned", string.Format("{0} Points", earedPoints));
         yield return new WaitForSeconds(2);
-        LcdWrite("You have", string.Format("{0} Points", PlayerData.Points));
+        LcdWrite("You have", string.Format("{0} Points", PlayerData.wallet.Points));
         yield return new WaitForSeconds(2);
         LcdWrite("You are", string.Format("Level {0}", PlayerData.Level));
         yield return new WaitForSeconds(2);
@@ -223,7 +230,6 @@ public class HighLowGame : MonoBehaviour {
                     Round++;
                     if (Round > GameProgression.ROUND_COUNT) // TODO: make variable for max rounds
                     {
-                        //PlayerData.Stage++;  // for now, let's not auto progress the stage.
                         if (PlayerData.Stage > GameProgression.STAGE_COUNT)
                         {
                             PlayerData.Level++;
@@ -232,8 +238,9 @@ public class HighLowGame : MonoBehaviour {
                         }
                         earnedPoints += 1000;
                         playingRound = false;
-                        PlayerData.Points += earnedPoints;
+                        PlayerData.wallet.Points += earnedPoints;
                         PlayerData.Push();
+                        ProgressPanel.UpdateStages(PlayerData);
                         yield return StartCoroutine(StageComplete(earnedPoints));
                     }
                     break;

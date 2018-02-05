@@ -9,6 +9,7 @@ public class GameStage : ScriptableObject
     public int Level;
     public int Stage;
     public string Title;
+    public int PreReqPoints;
 
     public int MaxValue;
     public float WaitSeconds;

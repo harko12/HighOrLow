@@ -14,13 +14,19 @@ public class GamePlayer {
         Name = "";
         Level = 1;
         Stage = 1;
-        Points = 0;
+        wallet.Wipe();
+    }
+
+    public GamePlayer()
+    {
+        wallet = new Wallet();
     }
 
     const string KEY_Name = "HoL-Name";
     const string KEY_Level = "HoL-Level";
     const string KEY_Stage = "HoL-Stage";
     const string KEY_Points = "HoL-Points";
+    const string KEY_WalletJson = "HoL-Wallet";
     private string mName;
     public string Name
     {
@@ -57,25 +63,17 @@ public class GamePlayer {
             mStage = value;
         }
     }
-    private int mPoints;
-    public int Points
-    {
-        get
-        {
-            return mPoints;
-        }
-        set
-        {
-            mPoints = value;
-        }
-    }
+
+    private string mWalletJson;
+    public Wallet wallet { get; set; }
 
     public void Push()
     {
         PlayerPrefs.SetString(KEY_Name, mName);
         PlayerPrefs.SetInt(KEY_Level, mLevel);
         PlayerPrefs.SetInt(KEY_Stage, mStage);
-        PlayerPrefs.SetInt(KEY_Points, mPoints);
+        mWalletJson = wallet.ToJson();
+        PlayerPrefs.SetString(KEY_WalletJson, mWalletJson);
     }
 
     public void Pull()
@@ -83,7 +81,8 @@ public class GamePlayer {
         mName = GetValue<string>(KEY_Name);
         mLevel = GetValue<int>(KEY_Level);
         mStage = GetValue<int>(KEY_Stage);
-        mPoints = GetValue<int>(KEY_Points);
+        mWalletJson = GetValue<string>(KEY_WalletJson);
+        wallet.Load(mWalletJson);
     }
 
     private T GetValue<T>(string key)
