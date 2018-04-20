@@ -14,12 +14,12 @@ public class GamePlayer {
         Name = "";
         Level = 1;
         Stage = 1;
-        wallet.Wipe();
+        myWallet.Wipe();
     }
 
     public GamePlayer()
     {
-        wallet = new Wallet();
+        myWallet = new Wallet();
     }
 
     const string KEY_Name = "HoL-Name";
@@ -65,14 +65,14 @@ public class GamePlayer {
     }
 
     private string mWalletJson;
-    public Wallet wallet { get; set; }
+    public Wallet myWallet { get; set; }
 
     public void Push()
     {
         PlayerPrefs.SetString(KEY_Name, mName);
         PlayerPrefs.SetInt(KEY_Level, mLevel);
         PlayerPrefs.SetInt(KEY_Stage, mStage);
-        mWalletJson = wallet.ToJson();
+        mWalletJson = myWallet.ToJson();
         PlayerPrefs.SetString(KEY_WalletJson, mWalletJson);
     }
 
@@ -82,7 +82,7 @@ public class GamePlayer {
         mLevel = GetValue<int>(KEY_Level);
         mStage = GetValue<int>(KEY_Stage);
         mWalletJson = GetValue<string>(KEY_WalletJson);
-        wallet.Load(mWalletJson);
+        myWallet.Load(mWalletJson);
     }
 
     private T GetValue<T>(string key)
@@ -116,5 +116,11 @@ public class GamePlayer {
         {
             return (T)o;
         }
+    }
+
+    public void SetLevelAndStage(int l, int s)
+    {
+        Stage = s;
+        Level = l;
     }
 }

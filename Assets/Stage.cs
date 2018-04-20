@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class Stage : MonoBehaviour {
@@ -59,7 +60,7 @@ public class Stage : MonoBehaviour {
     public void UpdateStage(GameStage stage, GamePlayer player)
     {
         if (player.Level < stage.Level
-             || (stage.PreReqPoints > 0 && player.wallet.Points < stage.PreReqPoints))
+             || (stage.PreReqPoints > 0 && player.myWallet.Points < stage.PreReqPoints))
         {
             mLock.Lock();
         }
@@ -67,5 +68,15 @@ public class Stage : MonoBehaviour {
         {
             mLock.Unlock();
         }
+    }
+
+    public void OnStageClick()
+    {
+        var gameManager = HighLowGame.GetInstance();
+        var p = gameManager.Getplayer();
+        var missions = Mission.GenerateMissions(p, StageInfo);
+        gameManager.SetCurrentMissions(missions);
+        gameManager.ProgressPanel.MissionView.UpdateMissions(missions);
+        gameManager.ProgressPanel.MissionView.ToggleMissions();
     }
 }

@@ -61,8 +61,7 @@ public class PlayerDebugPanel : MonoBehaviour {
     public void UpdateClicked()
     {
         parseValues();
-        mPlayer.Level = lvl;
-        mPlayer.Stage = stage;
+        mPlayer.SetLevelAndStage(lvl, stage);
     }
 
     public void RulesClicked()

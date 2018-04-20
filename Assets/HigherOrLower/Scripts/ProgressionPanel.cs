@@ -10,6 +10,7 @@ public class ProgressionPanel : MonoBehaviour {
     private Animator mAnim;
     public Text PlayerInfo;
     public WalletPanel WalletInfo;
+    public MissionPanel MissionView;
 
     private void Awake()
     {
@@ -40,7 +41,7 @@ public class ProgressionPanel : MonoBehaviour {
     public void UpdateStages(GamePlayer p)
     {
         PlayerInfo.text = string.Format("{0} Level: {1}", p.Name, p.Level);
-        WalletInfo.UpdateInfo(p.wallet);
+        WalletInfo.UpdateInfo(p.myWallet);
         for (int lcv = 0, length = ProgressView.transform.childCount; lcv < length; lcv++)
         {
             var level = ProgressView.transform.GetChild(lcv).gameObject.GetComponent<Level>();

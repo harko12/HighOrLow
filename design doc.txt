@@ -9,3 +9,10 @@ add different shapes / colors for more difficulty
 add rumble if applicable
 
 add sounds
+
+*** write about missions
+
+1. for challenges, save mission data (# of rounds, time taken to solve, values fore each)
+1. translate into juntle runner with high for jump, low for slide.  Use different graphics for characters.  When solved, jump ahead.  Use graphis for Hight or Low
+	find models for For Guys and For Girls versions ?
+2. fix up timing, so there is time for post round info to be shown (time+ or -, points earned,) before counter starts again
