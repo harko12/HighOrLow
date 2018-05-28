@@ -60,7 +60,7 @@ public class Stage : MonoBehaviour {
     public void UpdateStage(GameStage stage, GamePlayer player)
     {
         if (player.Level < stage.Level
-             || (stage.PreReqPoints > 0 && player.myWallet.Points < stage.PreReqPoints))
+             || (stage.PreReqPoints > 0 && player.myWallet.Time < stage.PreReqPoints))
         {
             mLock.Lock();
         }
@@ -71,7 +71,7 @@ public class Stage : MonoBehaviour {
     }
 
     public void OnStageClick()
-    {
+    { // TODO: maybe break this dependency on gamemanager and make this an event
         var gameManager = HighLowGame.GetInstance();
         var p = gameManager.Getplayer();
         var missions = Mission.GenerateMissions(p, StageInfo);

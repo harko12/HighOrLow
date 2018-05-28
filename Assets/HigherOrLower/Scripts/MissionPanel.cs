@@ -12,15 +12,6 @@ public class MissionPanel : MonoBehaviour {
     {
         mAnim = GetComponent<Animator>();
     }
-    // Use this for initialization
-    void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
     public void ToggleMissions()
     {
@@ -29,7 +20,7 @@ public class MissionPanel : MonoBehaviour {
 
     public void UpdateMissions(Mission[] missions)
     {
-        for (var lcv = 0; lcv < 3; lcv++)
+        for (var lcv = 0; lcv < missions.Length; lcv++)
         {
             missionDescriptions[lcv].text = missions[lcv].ToString();
         }

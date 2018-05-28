@@ -260,25 +260,7 @@ public class LEDRendering{
         }
 
         int[,] newValues = new int[values.GetLength(0), values.GetLength(1)];
-/*
-        int oldX = 0, oldY = 0;
-        if (invertX || invertY)
-        {
-            for (int x = lowX; x <= highX; x += xIncrement)
-            {
-                for (int y = lowY; y <= highY; y += yIncrement)
-                {
-                    newValues[x, y] = values[oldX, oldY];
-                    oldY++;
-                }
-                oldX++;
-            }
-        }
-        else
-        {
-            newValues = values;
-        }
-        */
+
         int oldX = lowX;
         for (int x = 0; x < values.GetLength(0); x++)
         {

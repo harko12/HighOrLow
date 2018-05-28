@@ -2,26 +2,47 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using HarkoGames;
 
 public class BasicTimer : MonoBehaviour {
-    private const string Format = "{0:0}:{1:00}.{2:00}";
     private Text mTimerText;
-    private HighLowGame mGame;
-	// Use this for initialization
-	void Start () {
-        mTimerText = this.GetComponent<Text>();
-        mGame = HighLowGame.GetInstance();
+    private Animator textAnim;
+    public Text AdjustmentText;
+
+    private void Awake()
+    {
+        textAnim = AdjustmentText.GetComponent<Animator>();
+    }
+    // Use this for initialization
+    void Start () {
+        mTimerText = GetComponent<Text>();
 	}
 	
-    public void OnTimerUpdate()
+    public void OnTimerUpdate(string eventId, TimeUpdateInfo args)
     {
+        mTimerText.text = TimeUtility.FormattedTime_MSSMM(args.RemainingTime);
+    }
 
-        System.TimeSpan t = System.TimeSpan.FromSeconds(mGame.currentTimeValues.RemainingTime);
+    public void OnRoundEnd(string eventId, RoundResultInfo roundInfo)
+    {
+        StartCoroutine(HandleTimeAdjustment(eventId, roundInfo));
+    }
 
-        int mins = t.Minutes;
-        int secs = t.Seconds;
-        int milliSecs = t.Milliseconds;
+    public void onStageStart(string eventId)
+    {
+        mTimerText.text = TimeUtility.FormattedTime_MSSMM(0);
+    }
 
-        mTimerText.text = string.Format(Format, mins, secs, milliSecs);
+    private IEnumerator HandleTimeAdjustment(string eventId, RoundResultInfo roundInfo)
+    {
+        EventMonitor.StartEvent(eventId);
+        if (roundInfo.TimeAdjustment != 0)
+        {
+            AdjustmentText.text = string.Format("{0}{1}", roundInfo.TimeAdjustment > 0 ? "+" : "-", TimeUtility.FormattedTime_MSSMM(roundInfo.TimeAdjustment));
+            textAnim.SetTrigger(roundInfo.TimeAdjustment > 0 ? "AddTime" : "RemoveTime");
+            yield return new WaitForSeconds(.25f);
+        }
+        EventMonitor.EndEvent(eventId);
+        yield return null;
     }
 }

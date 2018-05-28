@@ -4,12 +4,88 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using HarkoGames;
+
+/// <summary>
+/// mission event class
+/// </summary>
+[System.Serializable]
+public class MissionEvent : UnityEvent<string, Mission>
+{
+}
+
+/// <summary>
+/// Timer update information class
+/// </summary>
+public class TimeUpdateInfo
+{
+    public float RemainingTime { get; set; }
+    public float Progress { get; set; }
+    public bool UseTotalTime { get; set; }
+
+    public void SetValues(float r, float p, bool u)
+    {
+        RemainingTime = r;
+        Progress = p;
+        UseTotalTime = u;
+    }
+}
+
+/// <summary>
+/// Timer update event class
+/// </summary>
+[System.Serializable]
+public class TimerEvent : UnityEvent<string, TimeUpdateInfo>
+{
+}
 
 [System.Serializable]
-public class MissionEvent : UnityEvent<Mission>
+public class TimeAdjustedEvent : UnityEvent<string, float>
 {
 
 }
+
+[System.Serializable]
+public class RoundResultInfo
+{
+    public Mission MyMission { get; set; }
+    public FinishState State { get; set; }
+    public float TimeAdjustment { get; set; }
+    public int Round { get; set; }
+    public Wallet RoundLoot { get; set; }
+
+    public RoundResultInfo()
+    {
+
+    }
+
+    public RoundResultInfo(Mission m)
+    {
+        MyMission = m;
+        Reset(0);
+    }
+
+    public void Reset(int round)
+    {
+        Round = round;
+        RoundLoot = new Wallet();
+        State = FinishState.None;
+    }
+}
+
+[System.Serializable]
+public class RoundEndEvent : UnityEvent<string, RoundResultInfo>
+{
+
+}
+
+[System.Serializable]
+public class MonitoredEvent : UnityEvent<string>
+{
+
+}
+
+public enum FinishState { Right, Wrong, Timeout, Quit, None };
 
 public class HighLowGame : MonoBehaviour {
 
@@ -19,7 +95,7 @@ public class HighLowGame : MonoBehaviour {
     {
         return mInstance;
     }
-    public TimeUpdateEventArgs currentTimeValues { get; set; }
+    public TimeUpdateInfo currentTimeValues { get; set; }
 
     public enum ButtonState { NONE = 0, LEFT = 1, MID = 2, RIGHT = 3 };
     public LEDPanel LED1, LED2;
@@ -29,29 +105,28 @@ public class HighLowGame : MonoBehaviour {
     public Button ButtonLeft, ButtonMid, ButtonRight;
     public int Round;
 
-    public UnityEvent OnRoundStart;
-    public UnityEvent OnRoundEnd;
-    public UnityEvent OnStageChosen;
-    public UnityEvent OnStageStart;
+    [SerializeField]
+    public MonitoredEvent OnRoundStart;
+    private const string OnRoundStartKey = "HighLowGame.OnRoundStart";
+    [SerializeField]
+    public RoundEndEvent OnRoundEnd;
+    private const string OnRoundEndKey = "HighLowGame.OnRoundEnd";
+    [SerializeField]
+    public MonitoredEvent OnStageChosen;
+    private const string OnStageChosenKey = "HighLowGame.OnStageChosen";
+    [SerializeField]
+    public MonitoredEvent OnStageStart;
+    private const string OnStageStartKey = "HighLowGame.OnStageStart";
     [SerializeField]
     public MissionEvent OnStageEnd;
+    private const string OnStageEndKey = "HighLowGame.OnStageEnd";
 
-    public class TimeUpdateEventArgs
-    {
-        public float RemainingTime { get; set; }
-        public float Progress { get; set; }
-        public bool UseTotalTime { get; set; }
-
-        public void SetValues(float r, float p, bool u)
-        {
-            RemainingTime = r;
-            Progress = p;
-            UseTotalTime = u;
-        }
-
-
-    }
-    public UnityEvent OnTimerUpdate;
+    [SerializeField]
+    public TimerEvent OnTimerUpdate;
+    private const string OnTimerUpdateKey = "HighLowGame.OnTimerUpdate";
+    [SerializeField]
+    public TimeAdjustedEvent OnTimeAdjusted;
+    private const string OnTimeAdjustedKey = "HighLowGame.OnTimeAdjusted";
 
     public ProgressionPanel ProgressPanel;
     public GameStageContainer Levels;
@@ -86,7 +161,7 @@ public class HighLowGame : MonoBehaviour {
         PlayerData.Push();
         GameProgression.InitGameProgression(this.Levels);
         ProgressPanel.Init(this.Levels, PlayerData);
-        currentTimeValues = new TimeUpdateEventArgs();
+        currentTimeValues = new TimeUpdateInfo();
         ChooseMission();
     }
 
@@ -97,17 +172,12 @@ public class HighLowGame : MonoBehaviour {
         else if (Input.GetKeyUp(KeyCode.RightArrow)) { SetButtonState(3); }
     }
 
-    private void OnEnable()
-    {
-        //        StartCoroutine(GameLoop());
-    }
-
     private ButtonState _buttonState = ButtonState.NONE;
 
     public void SetButtonState(int state)
     {
         _buttonState = (ButtonState)state;
-        Debug.LogFormat("{0} pushed.", _buttonState.ToString());
+       // Debug.LogFormat("{0} pushed.", _buttonState.ToString());
     }
 
     public void ClearButtonState() // really just clears the buttons
@@ -129,26 +199,79 @@ public class HighLowGame : MonoBehaviour {
     {
         if (index >= currentMissions.Count())
         {
-            Debug.LogFormat("Invalid mission index chosen {0}", index);
+           // Debug.LogFormat("Invalid mission index chosen {0}", index);
             return;
         }
-        Debug.LogFormat("Starting {0}", currentMissions[index].ToString());
+        //Debug.LogFormat("Starting {0}", currentMissions[index].ToString());
         currentMissionIndex = index;
         ProgressPanel.ToggleMenu();
-        //ProgressPanel.MissionView.ToggleMissions();
-//        StartCoroutine(GameLoop(true));
         StartCoroutine(Game());
     }
 
-    public void RoundComplete()
+    private Mission SetCurrentMission(int index)
     {
-        System.Threading.Thread.Sleep(2000);
+        var m = currentMissions[index];
+        PlayerData.SetLevelAndStage(m.StageInfo.Level, m.StageInfo.Stage);
+        return m;
     }
 
-    public void MissionComplete(Mission m)
+    public IEnumerator StageStart()
     {
-        var earnedPoints = m.Result.EarnedPoints;
-        switch (m.Result.ResultType)
+        OnStageStart.Invoke(OnStageStartKey);
+        while (EventMonitor.IsRunning(OnStageStartKey))
+        {
+            yield return null;
+        }
+        yield return null;
+    }
+
+    public IEnumerator StageComplete(Mission m, RoundResultInfo result)
+    {
+        OnStageEnd.Invoke(OnStageEndKey, m);
+        while (EventMonitor.IsRunning(OnStageEndKey))
+        {
+            yield return null;
+        }
+        yield return null;
+    }
+
+    public IEnumerator RoundStart()
+    {
+        OnRoundStart.Invoke(OnRoundStartKey);
+        while (EventMonitor.IsRunning(OnRoundStartKey))
+        {
+            yield return null;
+        }
+        yield return null;
+    }
+
+    public IEnumerator RoundComplete(Mission m, RoundResultInfo result)
+    {
+        OnRoundEnd.Invoke(OnRoundEndKey, result);
+        while (EventMonitor.IsRunning(OnRoundEndKey))
+        {
+            yield return null;
+        }
+        yield return null;
+
+    }
+
+    public IEnumerator TimerUpdate(TimeUpdateInfo t)
+    {
+        OnTimerUpdate.Invoke(OnTimerUpdateKey, t);
+        while (EventMonitor.IsRunning(OnTimerUpdateKey))
+        {
+            yield return null;
+        }
+        yield return null;
+    }
+
+
+    public void MissionComplete(string eventId, Mission m)
+    {
+        m.Complete();
+        var earned = m.OverallResult.EarnedLoot;
+        switch (m.OverallResult.ResultType)
         {
             case MissionResultType.Failure:
             case MissionResultType.Quit:
@@ -156,8 +279,8 @@ public class HighLowGame : MonoBehaviour {
             case MissionResultType.Timeout:
                 break;
             case MissionResultType.Success:
-                earnedPoints += 1000;
-                PlayerData.myWallet.Points += earnedPoints;
+                PlayerData.myWallet += m.PrizePurse;
+                PlayerData.myWallet += earned;
                 PlayerData.Push();
                 break;
         }
@@ -168,40 +291,27 @@ public class HighLowGame : MonoBehaviour {
         Round = 1;
     }
 
-    // start gameloop from mission start ?
-    IEnumerator GameLoop()
+    public void onCountDown(string eventId)
     {
-        //yield return StartCoroutine(Instructions());
-        bool exit = false;
-        ClearButtonState();
-        while (!exit)
-        {
-            LcdWrite(string.Format("Stage: {0}", PlayerData.Stage), "Hit Enter to go!");
-            switch (_buttonState)
-            {
-                case ButtonState.MID:
-                    ClearButtonState();
-                    Round = 1;
-                    yield return StartCoroutine(Game());
-                    break;
-            }
-            yield return new WaitForSeconds(.5f);
-        }
-        yield return null;
+        StartCoroutine(Countdown(eventId, 3));
     }
 
-    public void ResetGameLoop()
+    public void onStageSetup(string eventId)
     {
-        //StopCoroutine(Game());  // should 
+        LED1.ClearLED();
+        LED2.ClearLED();
+        LcdWrite("", "");
     }
 
-    private IEnumerator Countdown(int countdownStart)
+    public IEnumerator Countdown(string eventId, int countdownStart)
     {
+        EventMonitor.StartEvent(eventId);
         for (int lcv = countdownStart; lcv >=0; lcv--)
         {
             Debug.LogFormat("counting down {0} .. ", lcv);
             yield return new WaitForSeconds(1);
         }
+        EventMonitor.EndEvent(eventId);
     }
 
     private IEnumerator Instructions()
@@ -218,49 +328,19 @@ public class HighLowGame : MonoBehaviour {
         yield return new WaitForSeconds(2);
     }
 
-    private IEnumerator StageFailed()
-    {
-        LcdWrite(string.Format("Stage {0}", PlayerData.Stage), "Failed");
-        yield return new WaitForSeconds(2);
-        LcdWrite("Try", "Again!");
-        yield return new WaitForSeconds(2);
-    }
-
-    private IEnumerator StageQuit()
-    {
-        LcdWrite(string.Format("Stage {0}", PlayerData.Stage), "Exiting");
-        yield return new WaitForSeconds(2);
-        LcdWrite("Returning to", "Menu");
-        yield return new WaitForSeconds(2);
-    }
-
-    private IEnumerator StageComplete(int earnedPoints)
-    {
-        LcdWrite("Stage", "Complete!");
-        yield return new WaitForSeconds(2);
-        LcdWrite("You earned", string.Format("{0} Points", earnedPoints));
-        yield return new WaitForSeconds(2);
-        LcdWrite("You have", string.Format("{0} Points", PlayerData.myWallet.Points));
-        yield return new WaitForSeconds(2);
-        LcdWrite("You are", string.Format("Level {0}", PlayerData.Level));
-        yield return new WaitForSeconds(2);
-        yield return null;
-    }
-
-    public enum FinishState { Right, Wrong, Timeout, Quit, None};
-
     private IEnumerator Game()
     {
-        yield return StartCoroutine(Countdown(3));
         var playingRound = true;
-        OnStageStart.Invoke();
-        float remainingTime = 0f;
-        var currentMission = currentMissions[currentMissionIndex];
-        currentMission.Result.ResultType = MissionResultType._Unknown;
+        yield return StartCoroutine(StageStart());
+        var currentMission = SetCurrentMission(currentMissionIndex);
+        currentMission.OverallResult.ResultType = MissionResultType._Unknown;
+        currentMission.OverallResult.TimeRemaining = 0f;
         if (currentMission.UseOverallTime)
         {
-            remainingTime = currentMission.TotalSeconds;
+            currentMission.OverallResult.TimeRemaining = currentMission.TotalSeconds;
         }
+
+        var roundResult = new RoundResultInfo(currentMission);
 
         switch (currentMission.MissionType)
         {
@@ -269,10 +349,11 @@ public class HighLowGame : MonoBehaviour {
             case MissionTypes.Survival:
                 break;
         }
+        Round = 1;
         while (playingRound)
         {
             var roundData = GameProgression.GetRound(PlayerData.Level, PlayerData.Stage, Round, LED1.LEDArraySize);
-            OnRoundStart.Invoke();
+            yield return StartCoroutine(RoundStart());
             var highMessage = roundData.High ? "     HIGHER!   " : "     LOWER!   "; // change this to an event or setter call 
             ButtonState correctBtn = roundData.Led1Right ? ButtonState.LEFT : ButtonState.RIGHT;
             ButtonState incorrectBtn = correctBtn == ButtonState.LEFT ? ButtonState.RIGHT : ButtonState.LEFT;
@@ -286,39 +367,25 @@ public class HighLowGame : MonoBehaviour {
                 roundData.LEDInfo[1].Count,
                 roundData.LEDInfo[1].InvertX, roundData.LEDInfo[1].InvertY);
 
+            float timeAdjustment = roundResult.TimeAdjustment;
+            roundResult.Reset(Round);
+
             float startTime = Time.time;
-            var roundTime = roundData.WaitSeconds;
             var loop = true;
             ClearButtonState();
             var _gameState = FinishState.None;
             int progressDashCount = 16;
             while (loop)
             {
-                float progress;
-                // break out into function?
-                if (currentMission.UseOverallTime) // the game is using an overall timer, and will end when it runs out (survival, sprint)
-                {
-                    remainingTime -= Time.deltaTime;
-                    var elapsedTime = currentMission.TotalSeconds - remainingTime;
-                    progress = elapsedTime / currentMission.TotalSeconds;
-                    currentTimeValues.SetValues(remainingTime, progress, currentMission.UseOverallTime);
-                }
-                else // the game is using an ever diminishing round timer, that resets ever time, but always gives a little less.
-                {
-                    roundTime = Time.time - startTime;
-                    var elapsedTime = roundData.WaitSeconds - roundTime;
-                    progress = roundTime / roundData.WaitSeconds;
-                    currentTimeValues.SetValues(elapsedTime, progress, currentMission.UseOverallTime);
-                }
+                currentMission.TimerTick(roundData, startTime);
 
-
-                OnTimerUpdate.Invoke();
-                progressDashCount = 16 - (Mathf.RoundToInt(16 * progress));
+                currentTimeValues.SetValues(currentMission.OverallResult.MissionTime, currentMission.OverallResult.Progress, currentMission.UseOverallTime);
+                yield return StartCoroutine(TimerUpdate(currentTimeValues));
+                progressDashCount = 16 - (Mathf.RoundToInt(16 * currentMission.OverallResult.Progress));
                 var progressMessage = progressDashCount > 0 ? new string('-', progressDashCount) : "";
-
                 LcdWrite(highMessage, progressMessage);
                 //              Debug.LogFormat("progress: {0}", progress);
-                if (progress >= 1)
+                if (currentMission.OverallResult.Progress >= 1)
                 {
                     loop = false;
                     _gameState = FinishState.Timeout;
@@ -326,95 +393,43 @@ public class HighLowGame : MonoBehaviour {
                 }
                 if (_buttonState == ButtonState.MID)
                 {
-                    Debug.Log("exit");
+                    //Debug.Log("exit");
                     loop = false;
                     _gameState = FinishState.Quit;
                 }
                 else if (_buttonState == correctBtn)
                 {
-                    Debug.Log("right");
+                    //Debug.Log("right");
                     loop = false;
                     _gameState = FinishState.Right;
                 }
                 else if (_buttonState == incorrectBtn)
                 {
-                    Debug.Log("wrong");
+                    //Debug.Log("wrong");
                     loop = false;
                     _gameState = FinishState.Wrong;
                 }
                 yield return null;
             }
             _buttonState = ButtonState.NONE;
-            //Debug.Log("round complete");
-            switch (_gameState)
-            {
-                case FinishState.Right:
-                    LcdWrite("Great job", "");
+            roundResult.State = _gameState;
 
-                    // add some time
-                    roundTime += 2; //TODO: make this a variable of the round, or maybe calculated  .  Perhaps a penalty for wrongness instead of ending the round.
-                    remainingTime += currentMission.BaseRecoverySeconds; // add event for this
-                    //
-                    var earnedPoints = 100;
-                    earnedPoints += (progressDashCount * 20);
-                    currentMission.Result.EarnedPoints += earnedPoints;
-                    Round++;
-                    /*
-                    if (Round > maxRounds) // TODO: make variable for max rounds
-                    {
-                        if (PlayerData.Stage > GameProgression.STAGE_COUNT)
-                        {
-                            PlayerData.Level++;
-                            earnedPoints += 5000;
-                            PlayerData.Stage = 1;
-                        }
-                        earnedPoints += 1000;
-                        playingRound = false;
-                        PlayerData.wallet.Points += earnedPoints;
-                        PlayerData.Push();
-                        ProgressPanel.UpdateStages(PlayerData);
-                        yield return StartCoroutine(StageComplete(earnedPoints));
-                    }
-                    */
-                    break;
-                case FinishState.Wrong:
-                    LcdWrite("you suck", "");
-                    currentMission.Result.Failures++;
-                    if (currentMission.Chances > 0 && currentMission.Result.Failures >= currentMission.Chances)
-                    {
-//                        playingRound = false;
-                        currentMission.Result.ResultType = MissionResultType.Failure;
-                    }
-//                    playingRound = false;
-//                    yield return StartCoroutine(StageFailed());
-                    break;
-                case FinishState.Timeout:
-                    LcdWrite("Time's up", "");
-                    //playingRound = false;
-                    currentMission.Result.ResultType = MissionResultType.Timeout;
-                    //yield return StartCoroutine(StageFailed());
-                    break;
-                case FinishState.Quit:
-                    LcdWrite("Exiting", "");
-                    //playingRound = false;
-                    currentMission.Result.ResultType = MissionResultType.Quit;
-                    //yield return StartCoroutine(StageQuit());
-                    break;
-            }
+            currentMission.ProcessRoundResult(roundResult, ref Round);
+            Debug.LogFormat("round {0}: earned: {1}", Round, roundResult.RoundLoot.ToString());
             // check for a resulttype (unknown means it's still playing, or the max rounds being exceeded
-            if (currentMission.Result.ResultType != MissionResultType._Unknown 
+            if (currentMission.OverallResult.ResultType != MissionResultType._Unknown 
                 || currentMission.Rounds != 0 && Round > currentMission.Rounds)
             {
                 playingRound = false;
             }
-            OnRoundEnd.Invoke();
+            yield return StartCoroutine(RoundComplete(currentMission, roundResult));
         }
-        if (currentMission.Result.ResultType == MissionResultType._Unknown)
+        if (currentMission.OverallResult.ResultType == MissionResultType._Unknown)
         {
             // if at this point it's still unknown, then nothing bad happened.  Success!
-            currentMission.Result.ResultType = MissionResultType.Success;
+            currentMission.OverallResult.ResultType = MissionResultType.Success;
         }
-        OnStageEnd.Invoke(arg0: currentMission);
+        yield return StartCoroutine(StageComplete(currentMission, roundResult));
         yield return null;
     }
 

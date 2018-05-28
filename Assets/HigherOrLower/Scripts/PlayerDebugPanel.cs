@@ -16,7 +16,7 @@ public class PlayerDebugPanel : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         mPlayer = gameMaster.Getplayer();
-        UpdateInfo();
+        UpdateInfo("");
 	}
 	
     public void InitPanelClicked()
@@ -29,7 +29,7 @@ public class PlayerDebugPanel : MonoBehaviour {
         pPanel.UpdateStages(mPlayer);
     }
 
-    public void UpdateInfo()
+    public void UpdateInfo(string eventId)
     {
         lvlInput.text = string.Format("{0}", mPlayer.Level);
         stageInput.text = string.Format("{0}", mPlayer.Stage);
