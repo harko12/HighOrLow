@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5ea0507abe237e4da33ab5784d2951a, type: 3}
+  m_Name: MissionSettings 01
+  m_EditorClassIdentifier: 
+  WagerChance: 0.2
+  Scenarios:
+  - MIN_TIMER_VALUE: 1
+    MAX_CHANCES: 5
+    MIN_ROUNDS: 10
+    MIN_BYROUND_TIME: 0.5
+    MAX_RECOVERY_SECONDS: 0.5
+    MIN_RECOVERY_SECONDS: 0.1
+    MAX_RECOVERY_FALLOFF: 0.05
+    MIN_RECOVERY_FALLOFF: 0.001
+    MissionType: 0
+    TotalSeconds: 2
+    TimeExchangeRate: 0
+    BaseRecoverySeconds: 0.2
+    RecoveryFalloff: 0
+    RewardComboInterval: 25
+    Rounds: 0
+    Chances: 0
+    CanWager: 0
+    PrizePurse:
+      Time: 0
+      Tokens: 0
+      Coins: 0
+  - MIN_TIMER_VALUE: 1
+    MAX_CHANCES: 5
+    MIN_ROUNDS: 10
+    MIN_BYROUND_TIME: 0.5
+    MAX_RECOVERY_SECONDS: 1
+    MIN_RECOVERY_SECONDS: 0.1
+    MAX_RECOVERY_FALLOFF: 0.05
+    MIN_RECOVERY_FALLOFF: 0.001
+    MissionType: 1
+    TotalSeconds: 30
+    TimeExchangeRate: 0
+    BaseRecoverySeconds: 0
+    RecoveryFalloff: 0
+    RewardComboInterval: 0
+    Rounds: 10
+    Chances: 0
+    CanWager: 0
+    PrizePurse:
+      Time: 0
+      Tokens: 0
+      Coins: 0
+  - MIN_TIMER_VALUE: 1
+    MAX_CHANCES: 5
+    MIN_ROUNDS: 10
+    MIN_BYROUND_TIME: 0.5
+    MAX_RECOVERY_SECONDS: 1
+    MIN_RECOVERY_SECONDS: 0.1
+    MAX_RECOVERY_FALLOFF: 0.05
+    MIN_RECOVERY_FALLOFF: 0.001
+    MissionType: 2
+    TotalSeconds: 0
+    TimeExchangeRate: 0
+    BaseRecoverySeconds: 1
+    RecoveryFalloff: 0
+    RewardComboInterval: 0
+    Rounds: 10
+    Chances: 0
+    CanWager: 0
+    PrizePurse:
+      Time: 0
+      Tokens: 0
+      Coins: 0

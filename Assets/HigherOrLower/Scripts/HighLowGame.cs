@@ -90,11 +90,13 @@ public enum FinishState { Right, Wrong, Timeout, Quit, None };
 public class HighLowGame : MonoBehaviour {
 
     private static HighLowGame mInstance;
+    private bool updateTimer;
 
     public static HighLowGame GetInstance()
     {
         return mInstance;
     }
+
     public TimeUpdateInfo currentTimeValues { get; set; }
 
     public enum ButtonState { NONE = 0, LEFT = 1, MID = 2, RIGHT = 3 };
@@ -170,6 +172,15 @@ public class HighLowGame : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.LeftArrow)) { SetButtonState(1); }
         else if (Input.GetKeyUp(KeyCode.DownArrow)) { SetButtonState(2); }
         else if (Input.GetKeyUp(KeyCode.RightArrow)) { SetButtonState(3); }
+    }
+
+    private void FixedUpdate()
+    {
+        if (updateTimer)
+        {
+            GetCurrentMission().TimerTick(mCurrentRoundData);
+        }
+        
     }
 
     private ButtonState _buttonState = ButtonState.NONE;
@@ -327,7 +338,7 @@ public class HighLowGame : MonoBehaviour {
         LcdWrite("Easy", "      Peasy.");
         yield return new WaitForSeconds(2);
     }
-
+    private GameProgression.GameRound mCurrentRoundData;
     private IEnumerator Game()
     {
         var playingRound = true;
@@ -352,32 +363,33 @@ public class HighLowGame : MonoBehaviour {
         Round = 1;
         while (playingRound)
         {
-            var roundData = GameProgression.GetRound(PlayerData.Level, PlayerData.Stage, Round, LED1.LEDArraySize);
+            mCurrentRoundData = GameProgression.GetRound(PlayerData.Level, PlayerData.Stage, Round, LED1.LEDArraySize);
             yield return StartCoroutine(RoundStart());
-            var highMessage = roundData.High ? "     HIGHER!   " : "     LOWER!   "; // change this to an event or setter call 
-            ButtonState correctBtn = roundData.Led1Right ? ButtonState.LEFT : ButtonState.RIGHT;
+            var highMessage = mCurrentRoundData.High ? "     HIGHER!   " : "     LOWER!   "; // change this to an event or setter call 
+            ButtonState correctBtn = mCurrentRoundData.Led1Right ? ButtonState.LEFT : ButtonState.RIGHT;
             ButtonState incorrectBtn = correctBtn == ButtonState.LEFT ? ButtonState.RIGHT : ButtonState.LEFT;
-            LEDRendering.Graph(roundData.LEDInfo[0].graphType, LED1, 
-                roundData.LEDInfo[0].StartX, roundData.LEDInfo[0].StartY, 
-                roundData.LEDInfo[0].Count,
-                roundData.LEDInfo[0].InvertX, roundData.LEDInfo[0].InvertY);
+            LEDRendering.Graph(mCurrentRoundData.LEDInfo[0].graphType, LED1, 
+                mCurrentRoundData.LEDInfo[0].StartX, mCurrentRoundData.LEDInfo[0].StartY, 
+                mCurrentRoundData.LEDInfo[0].Count,
+                mCurrentRoundData.LEDInfo[0].InvertX, mCurrentRoundData.LEDInfo[0].InvertY);
 
-            LEDRendering.Graph(roundData.LEDInfo[1].graphType, LED2,
-                roundData.LEDInfo[1].StartX, roundData.LEDInfo[1].StartY,
-                roundData.LEDInfo[1].Count,
-                roundData.LEDInfo[1].InvertX, roundData.LEDInfo[1].InvertY);
+            LEDRendering.Graph(mCurrentRoundData.LEDInfo[1].graphType, LED2,
+                mCurrentRoundData.LEDInfo[1].StartX, mCurrentRoundData.LEDInfo[1].StartY,
+                mCurrentRoundData.LEDInfo[1].Count,
+                mCurrentRoundData.LEDInfo[1].InvertX, mCurrentRoundData.LEDInfo[1].InvertY);
 
             float timeAdjustment = roundResult.TimeAdjustment;
             roundResult.Reset(Round);
 
-            float startTime = Time.time;
+            currentMission.OverallResult.StartTime = Time.time;
             var loop = true;
             ClearButtonState();
             var _gameState = FinishState.None;
             int progressDashCount = 16;
+            updateTimer = true;
             while (loop)
             {
-                currentMission.TimerTick(roundData, startTime);
+                //currentMission.TimerTick(mCurrentRoundData);
 
                 currentTimeValues.SetValues(currentMission.OverallResult.MissionTime, currentMission.OverallResult.Progress, currentMission.UseOverallTime);
                 yield return StartCoroutine(TimerUpdate(currentTimeValues));
@@ -411,11 +423,12 @@ public class HighLowGame : MonoBehaviour {
                 }
                 yield return null;
             }
+            updateTimer = false;
             _buttonState = ButtonState.NONE;
             roundResult.State = _gameState;
 
             currentMission.ProcessRoundResult(roundResult, ref Round);
-            Debug.LogFormat("round {0}: earned: {1}", Round, roundResult.RoundLoot.ToString());
+//            Debug.LogFormat("round {0}: earned: {1}", Round, roundResult.RoundLoot.ToString());
             // check for a resulttype (unknown means it's still playing, or the max rounds being exceeded
             if (currentMission.OverallResult.ResultType != MissionResultType._Unknown 
                 || currentMission.Rounds != 0 && Round > currentMission.Rounds)

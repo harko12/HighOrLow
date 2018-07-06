@@ -22,7 +22,7 @@ public class Wallet
 
     public override string ToString()
     {
-        return String.Format("Tokens: {0}, Coine: {1}, Time: {2}, ", Tokens, Coins, Time);
+        return String.Format("Tokens: {0}, Coins: {1}, Time: {2}, ", Tokens, Coins, Time);
     }
 
     public string ToJson()

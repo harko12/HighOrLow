@@ -12,6 +12,10 @@ namespace HarkoGames
 
         public static string FormattedTime_MSSMM(float seconds)
         {
+            if (seconds < 0)
+            {
+                seconds *= -1;
+            }
             System.TimeSpan t = System.TimeSpan.FromSeconds(seconds);
             int mins = t.Minutes;
             int secs = t.Seconds;

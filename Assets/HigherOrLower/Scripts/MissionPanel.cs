@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[ExecuteInEditMode]
 public class MissionPanel : MonoBehaviour {
     private Animator mAnim;
 
-    public Text[] missionDescriptions;
+    public GameObject missionButtonPrefab;
+    public Transform contentRoot;
+    public ObjectPooler missionButtonPool;
 
     private void Awake()
     {
@@ -18,11 +21,22 @@ public class MissionPanel : MonoBehaviour {
         mAnim.SetTrigger("MissionToggle");
     }
 
+    public void ClearMissions()
+    {
+        foreach (Transform t in contentRoot)
+        {
+            t.gameObject.SetActive(false);
+        }
+    }
+
     public void UpdateMissions(Mission[] missions)
     {
         for (var lcv = 0; lcv < missions.Length; lcv++)
         {
-            missionDescriptions[lcv].text = missions[lcv].ToString();
+            var mb = missionButtonPool.GetPooledObject();
+            var mbScript = mb.GetComponent<MissionButton>();
+            mbScript.SetMission(missions[lcv], lcv);
+            mb.SetActive(true);
         }
     }
 
