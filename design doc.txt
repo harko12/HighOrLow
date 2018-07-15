@@ -2,7 +2,7 @@ Rounds -> increase speed
 Stages -> add new screen types and variations
 Levels -> decrease gap between right and wrong, increase chance of higher or lower
 
-add time modes -> start fresh every round, add surplus to next round, survival(no repleneshment between rounds)
+add time modes -> start fresh every round(byRound), add surplus to next round(Sprint? kind of), survival(no repleneshment between rounds), time attack -> (survival, but you get to keep a the time you earn per round.  Time you earn diminishes as a round progresses)
 
 add different shapes / colors for more difficulty
 
@@ -15,4 +15,13 @@ add sounds
 1. for challenges, save mission data (# of rounds, time taken to solve, values fore each)
 1. translate into juntle runner with high for jump, low for slide.  Use different graphics for characters.  When solved, jump ahead.  Use graphis for Hight or Low
 	find models for For Guys and For Girls versions ?
-2. fix up timing, so there is time for post round info to be shown (time+ or -, points earned,) before counter starts again
+2. fix up timing, so there is time for post round info to be shown (time+ or -, points earned,) before counter starts again --DONE
+
+survival - add some curves for intensity of the recoveryfalloff variable.  consider the Rounds value to be the projected rounds before it becomes too difficult to continue.  Perhaps consider the chances value as how many failures until it becomes more difficult:
+recovery -= progress(current round / rounds) * recoveryfalloff ?  maybe:
+recovery -= curve(progress(current round / rounds)) * recoveryfalloff ?  that allows for more variety, with different types of curves (early difficulty to easier, slowly getting harder, difficulty spike in the middle, etc..)
+Combos need to give some back, or be rewarded.
+
+
+
+

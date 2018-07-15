@@ -26,7 +26,7 @@ public class MissionGeneratorTester : MonoBehaviour {
         if (Application.isPlaying)
         {
             myMissionPanel.ClearMissions();
-            myMissionPanel.UpdateMissions(missions);
+            myMissionPanel.UpdateMissions(testPlayer, missions);
         }
     }
 

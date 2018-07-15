@@ -4,7 +4,23 @@ using UnityEngine;
 using System.Linq;
 using System.Text;
 
-public enum MissionTypes { Survival, Sprint, ByRound }
+public enum MissionTypes {
+    /// <summary>
+    /// gameplay: beginning with a set amount of time, the timer runs down as you play.  Getting a right answer adds more time, getting a wrong answer reduces the timer
+    /// note: there is a falloff of the amount of time you get back that uses a projected amount of rounds until it gets 'really' hard.  can also use the chances to calculate
+    /// cost: 
+    /// </summary>
+    Survival,
+    /// <summary>
+    /// gameplay: progresses for a set amount of rounds.  You start with a set amount of time, and have that much time to complete the assignment
+    /// cost: 
+    /// </summary>
+    Sprint,
+    /// <summary>
+    /// gameplay: progresses for a set amount of rounds.  Each round starts a fresh timer, based on baserecoveryseconds
+    /// cost: 
+    /// </summary>
+    ByRound }
 public enum MissionResultType { _Unknown, Success, Timeout, Failure, Quit}
 [System.Serializable]
 public class MissionResult
@@ -73,7 +89,7 @@ public class Mission {
     public bool CanWager;
     public int Wager { get; set; }
     [SerializeField]
-    public Wallet PrizePurse;
+    public Wallet Cost, PrizePurse;
     public MissionResult OverallResult { get; set; }
 
     public Mission()
@@ -326,8 +342,15 @@ public class Mission {
         }
     }
 
-    public void ProcessRoundResult(RoundResultInfo roundResult, ref int Round)
+    /// <summary>
+    /// Process the round result and determing if we need to continue
+    /// </summary>
+    /// <param name="roundResult"></param>
+    /// <param name="Round"></param>
+    /// <returns>boolean whether or not to continue the mission</returns>
+    public bool ProcessRoundResult(RoundResultInfo roundResult, ref int Round)
     {
+        var continueMission = true;
         // adjust some time, based on the result
         AdjustTime(roundResult);
         HandleCombo(roundResult);
@@ -354,7 +377,15 @@ public class Mission {
                 break;
         }
 
+        // check for a resulttype (unknown means it's still playing, or the max rounds being exceeded
+        if (OverallResult.ResultType != MissionResultType._Unknown 
+            || Rounds != 0 && Round > Rounds)
+        {
+            continueMission = false;
+        }
+
         Round++;
+        return continueMission;
     }
 
     public void AdjustTime(RoundResultInfo roundResult)

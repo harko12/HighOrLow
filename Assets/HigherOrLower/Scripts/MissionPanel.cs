@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using HighOrLow;
 
 [ExecuteInEditMode]
 public class MissionPanel : MonoBehaviour {
@@ -29,13 +30,15 @@ public class MissionPanel : MonoBehaviour {
         }
     }
 
-    public void UpdateMissions(Mission[] missions)
+    public void UpdateMissions(GamePlayer p, Mission[] missions)
     {
         for (var lcv = 0; lcv < missions.Length; lcv++)
         {
+            var thisMission = missions[lcv];
             var mb = missionButtonPool.GetPooledObject();
             var mbScript = mb.GetComponent<MissionButton>();
-            mbScript.SetMission(missions[lcv], lcv);
+            mbScript.SetMission(thisMission, lcv);
+            mbScript.CanPlay = p.myWallet.CanAfford(thisMission.Cost);
             mb.SetActive(true);
         }
     }

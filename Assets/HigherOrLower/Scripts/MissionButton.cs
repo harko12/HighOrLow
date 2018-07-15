@@ -8,9 +8,10 @@ public class MissionButton : MonoBehaviour
     public Image MissionTypeImage;
     private Button myButton;
     public Text MissionText;
-    public WalletPanel PrizeWallet;
+    public WalletPanel PrizeWallet, CostWallet;
     public Sprite SurvivalSprite, SprintSprite, ByRoundSprite, TimeAttackSprite;
     public int MissionIndex;
+    public bool CanPlay { get; set; }
 
     private void Awake()
     {
@@ -30,7 +31,15 @@ public class MissionButton : MonoBehaviour
 
     void StartMission()
     {
-        HighLowGame.GetInstance().StartMission(MissionIndex);
+        if (CanPlay)
+        {
+            HighLowGame.GetInstance().StartMission(MissionIndex);
+        }
+        else
+        {
+            // put up message
+            Debug.Log("can't afford this mission");
+        }
     }
 
     public void SetMission(Mission m, int missionIndex)
@@ -38,6 +47,7 @@ public class MissionButton : MonoBehaviour
         MissionIndex = missionIndex;
         MissionText.text = m.Description();
         PrizeWallet.UpdateInfo(m.PrizePurse, true);
+        CostWallet.UpdateInfo(m.Cost, true);
         switch (m.MissionType)
         {
             case MissionTypes.ByRound:

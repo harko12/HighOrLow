@@ -382,9 +382,9 @@ MonoBehaviour:
   TestStage: {fileID: 11400000, guid: 0a7129a1adc2d6347b45571437ab7563, type: 2}
   myMissionPanel: {fileID: 1847140332}
   myGenerator: {fileID: 2121196281}
-  missionCount: 4
+  missionCount: 8
   testMissionType: 0
-  testDifficulty: 0
+  testDifficulty: 0.51
   difficultyTestMission:
     MIN_TIMER_VALUE: 1
     MAX_CHANCES: 5
@@ -394,21 +394,21 @@ MonoBehaviour:
     MIN_RECOVERY_SECONDS: 0.1
     MAX_RECOVERY_FALLOFF: 0.05
     MIN_RECOVERY_FALLOFF: 0.001
-    MissionType: 2
-    TotalSeconds: 0
+    MissionType: 1
+    TotalSeconds: 29
     TimeExchangeRate: 1
     BaseRecoverySeconds: 1
     RecoveryFalloff: 0.05
     RewardComboInterval: 0
-    Rounds: 20
-    Chances: 4
+    Rounds: 11
+    Chances: 0
     CanWager: 0
     PrizePurse:
       Time: 0
       Tokens: 0
       Coins: 0
-  difficultyTestMissionValue: 1.8199999
-  targetDifficulty: 2
+  difficultyTestMissionValue: 0.047000002
+  targetDifficulty: 0
 --- !u!4 &479594390
 Transform:
   m_ObjectHideFlags: 0

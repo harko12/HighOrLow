@@ -31,6 +31,7 @@ public class WalletPanel : MonoBehaviour {
     public void onStageStart(string eventId)
     {
         myWallet = new Wallet();
+        UpdateInfo(myWallet);
     }
 
     private IEnumerator HandleWalletAdjustment(string eventId, Wallet newWallet)

@@ -3,7 +3,7 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -27,11 +27,15 @@ MonoBehaviour:
     BaseRecoverySeconds: 0.2
     RecoveryFalloff: 0
     RewardComboInterval: 25
-    Rounds: 0
+    Rounds: 20
     Chances: 0
     CanWager: 0
-    PrizePurse:
+    Cost:
       Time: 0
+      Tokens: 5
+      Coins: 0
+    PrizePurse:
+      Time: 30
       Tokens: 0
       Coins: 0
   - MIN_TIMER_VALUE: 1
@@ -51,9 +55,13 @@ MonoBehaviour:
     Rounds: 10
     Chances: 0
     CanWager: 0
+    Cost:
+      Time: 30
+      Tokens: 0
+      Coins: 0
     PrizePurse:
       Time: 0
-      Tokens: 0
+      Tokens: 5
       Coins: 0
   - MIN_TIMER_VALUE: 1
     MAX_CHANCES: 5
@@ -72,7 +80,11 @@ MonoBehaviour:
     Rounds: 10
     Chances: 0
     CanWager: 0
+    Cost:
+      Time: 10
+      Tokens: 0
+      Coins: 0
     PrizePurse:
       Time: 0
       Tokens: 0
-      Coins: 0
+      Coins: 1

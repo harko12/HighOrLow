@@ -31,56 +31,6 @@ public class MissionGenerator : MonoBehaviour {
 		
 	}
 
-    public static Mission[] GenerateMissions_old(GamePlayer p, GameStage stage)
-    {
-        /* need to come up with some rules, based on player's level and 
-         * current score, and such as to what kind of missions to generate. 
-         * For now, I'll do one of each
-         */
-        var m1 = new Mission()
-        {
-            StageInfo = stage,
-            MissionType = MissionTypes.Sprint,
-            TotalSeconds = 30f,
-            Rounds = 15,
-            CanWager = false,
-            PrizePurse = new Wallet() { Time = 30, Coins = 1, Tokens = 10 }
-        };
-
-        var m2 = new Mission()
-        {
-            StageInfo = stage,
-            MissionType = MissionTypes.Sprint,
-            TotalSeconds = 60f,
-            Rounds = 20,
-            Chances = 1,
-            CanWager = false,
-            PrizePurse = new Wallet() { Time = 30, Coins = 1, Tokens = 10 }
-        };
-
-        var m3 = new Mission()
-        {
-            StageInfo = stage,
-            MissionType = MissionTypes.Survival,
-            Rounds = 0,
-            TotalSeconds = 5f,
-            BaseRecoverySeconds = 1f, // milliseconds, I think
-            CanWager = false,
-            PrizePurse = new Wallet() { Time = 0, Coins = 0, Tokens = 10 }
-        };
-
-        var m4 = new Mission()
-        {
-            StageInfo = stage,
-            MissionType = MissionTypes.ByRound,
-            Rounds = 10,
-            CanWager = false,
-            PrizePurse = new Wallet() { Time = 30, Coins = 1, Tokens = 10 }
-        };
-
-        return new Mission[] { m1, m2, m3, m4 };
-    }
-
     public void AdjustValue(ref float value, float percent, float min = 0, float max = 1)
     {
         var minDiff = value - min;
@@ -122,8 +72,10 @@ public class MissionGenerator : MonoBehaviour {
             }
             m.CanWager = canWager;
             m.AdjustDifficulty(difficultyAdjust);
-            // figure out purse
-            m.PrizePurse = new Wallet() { Time = 30, Coins = 1, Tokens = 10 };
+            // adjust cost for difficulty / complexity
+            //m.Cost = ??
+            // adjust prize purse
+            //m.PrizePurse = new Wallet() { Time = 30, Coins = 1, Tokens = 10 };
             lcv++;
             missionTypePool.Remove(type);
             generatedMissions.Add(m);
@@ -152,7 +104,9 @@ public class MissionGenerator : MonoBehaviour {
             TotalSeconds = m.TotalSeconds,
             BaseRecoverySeconds = m.BaseRecoverySeconds,
             Rounds = m.Rounds,
-            Chances = m.Chances
+            Chances = m.Chances,
+            PrizePurse = m.PrizePurse,
+            Cost = m.Cost
         };
 
         return newMission;

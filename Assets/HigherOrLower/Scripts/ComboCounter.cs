@@ -21,6 +21,11 @@ public class ComboCounter : MonoBehaviour {
         mComboGroup.alpha = 0f;
 	}
 
+    public void onStageStart(string eventId)
+    {
+        SetComboText(0);
+    }
+
     public void OnRoundEnd(string eventId, RoundResultInfo roundInfo)
     {
         SetComboText(roundInfo.MyMission.OverallResult.Combo);

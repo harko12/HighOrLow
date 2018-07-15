@@ -157,7 +157,11 @@ public class HighLowGame : MonoBehaviour {
     private void Start()
     {
         PlayerData.Pull();
-        PlayerData.Wipe();// for debugging until the ui is done
+        //PlayerData.Wipe();// for debugging until the ui is done
+        if (PlayerData.myWallet.IsEmpty())
+        {
+            PlayerData.myWallet += new Wallet() { Coins = 0, Time = 60, Tokens = 10 }; // for now, some starting capitol
+        }
         if (PlayerData.Level == 0) PlayerData.Level = 1;
         if (PlayerData.Stage == 0) PlayerData.Stage = 1;
         PlayerData.Push();
@@ -215,7 +219,6 @@ public class HighLowGame : MonoBehaviour {
         }
         //Debug.LogFormat("Starting {0}", currentMissions[index].ToString());
         currentMissionIndex = index;
-        ProgressPanel.ToggleMenu();
         StartCoroutine(Game());
     }
 
@@ -341,8 +344,7 @@ public class HighLowGame : MonoBehaviour {
     private GameProgression.GameRound mCurrentRoundData;
     private IEnumerator Game()
     {
-        var playingRound = true;
-        yield return StartCoroutine(StageStart());
+        var continueMission = true;
         var currentMission = SetCurrentMission(currentMissionIndex);
         currentMission.OverallResult.ResultType = MissionResultType._Unknown;
         currentMission.OverallResult.TimeRemaining = 0f;
@@ -350,6 +352,12 @@ public class HighLowGame : MonoBehaviour {
         {
             currentMission.OverallResult.TimeRemaining = currentMission.TotalSeconds;
         }
+
+        // coroutine to show deducting the cost
+        PlayerData.myWallet -= currentMission.Cost;
+        ProgressPanel.ToggleMenu();
+
+        yield return StartCoroutine(StageStart());
 
         var roundResult = new RoundResultInfo(currentMission);
 
@@ -361,7 +369,7 @@ public class HighLowGame : MonoBehaviour {
                 break;
         }
         Round = 1;
-        while (playingRound)
+        while (continueMission)
         {
             mCurrentRoundData = GameProgression.GetRound(PlayerData.Level, PlayerData.Stage, Round, LED1.LEDArraySize);
             yield return StartCoroutine(RoundStart());
@@ -427,14 +435,7 @@ public class HighLowGame : MonoBehaviour {
             _buttonState = ButtonState.NONE;
             roundResult.State = _gameState;
 
-            currentMission.ProcessRoundResult(roundResult, ref Round);
-//            Debug.LogFormat("round {0}: earned: {1}", Round, roundResult.RoundLoot.ToString());
-            // check for a resulttype (unknown means it's still playing, or the max rounds being exceeded
-            if (currentMission.OverallResult.ResultType != MissionResultType._Unknown 
-                || currentMission.Rounds != 0 && Round > currentMission.Rounds)
-            {
-                playingRound = false;
-            }
+            continueMission = currentMission.ProcessRoundResult(roundResult, ref Round);
             yield return StartCoroutine(RoundComplete(currentMission, roundResult));
         }
         if (currentMission.OverallResult.ResultType == MissionResultType._Unknown)
