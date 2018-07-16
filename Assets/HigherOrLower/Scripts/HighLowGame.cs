@@ -305,27 +305,11 @@ public class HighLowGame : MonoBehaviour {
         Round = 1;
     }
 
-    public void onCountDown(string eventId)
-    {
-        StartCoroutine(Countdown(eventId, 3));
-    }
-
     public void onStageSetup(string eventId)
     {
         LED1.ClearLED();
         LED2.ClearLED();
         LcdWrite("", "");
-    }
-
-    public IEnumerator Countdown(string eventId, int countdownStart)
-    {
-        EventMonitor.StartEvent(eventId);
-        for (int lcv = countdownStart; lcv >=0; lcv--)
-        {
-            Debug.LogFormat("counting down {0} .. ", lcv);
-            yield return new WaitForSeconds(1);
-        }
-        EventMonitor.EndEvent(eventId);
     }
 
     private IEnumerator Instructions()
