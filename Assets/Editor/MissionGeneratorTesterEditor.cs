@@ -3,37 +3,41 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(MissionGeneratorTester))]
-public class MissionGeneratorTesterEditor : Editor
+namespace HighOrLow
 {
-    public override void OnInspectorGUI()
+
+    [CustomEditor(typeof(MissionGeneratorTester))]
+    public class MissionGeneratorTesterEditor : Editor
     {
-        DrawDefaultInspector();
-
-        MissionGeneratorTester myScript = (MissionGeneratorTester)target;
-        if (GUILayout.Button("Generate Missions"))
+        public override void OnInspectorGUI()
         {
-            myScript.GenerateMissions();
-            Canvas.ForceUpdateCanvases();
-        }
+            DrawDefaultInspector();
 
-        if (GUILayout.Button("Generate single Mission"))
-        {
-            myScript.GenerateSingleMission();
-            Canvas.ForceUpdateCanvases();
-        }
+            MissionGeneratorTester myScript = (MissionGeneratorTester)target;
+            if (GUILayout.Button("Generate Missions"))
+            {
+                myScript.GenerateMissions();
+                Canvas.ForceUpdateCanvases();
+            }
 
-        if (GUILayout.Button("Calculate Mission Difficulty"))
-        {
-            myScript.CalculateMissionDifficulty();
-            Canvas.ForceUpdateCanvases();
-        }
+            if (GUILayout.Button("Generate single Mission"))
+            {
+                myScript.GenerateSingleMission();
+                Canvas.ForceUpdateCanvases();
+            }
 
-        if (GUILayout.Button("Adjust Mission Difficulty"))
-        {
-            myScript.AdjustMissionDifficulty();
-            Canvas.ForceUpdateCanvases();
-        }
+            if (GUILayout.Button("Calculate Mission Difficulty"))
+            {
+                myScript.CalculateMissionDifficulty();
+                Canvas.ForceUpdateCanvases();
+            }
 
+            if (GUILayout.Button("Adjust Mission Difficulty"))
+            {
+                myScript.AdjustMissionDifficulty();
+                Canvas.ForceUpdateCanvases();
+            }
+
+        }
     }
 }

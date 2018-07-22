@@ -3,21 +3,25 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class MissionSettings : ScriptableObject
+namespace HighOrLow
 {
-    [Range(0, 1)]
-    public float WagerChance;
 
-    public Mission[] Scenarios;
-
-    [MenuItem("Assets/More||Less/Create/MissionSettings")]
-    public static void CreateAsset()
+    public class MissionSettings : ScriptableObject
     {
-        var newObj = ScriptableObjectUtility.CreateAsset<MissionSettings>("Assets/HigherOrLower/MissionSettings/");
-        newObj.Setup();
-    }
+        [Range(0, 1)]
+        public float WagerChance;
 
-    public void Setup()
-    {
+        public Mission[] Scenarios;
+
+        [MenuItem("Assets/More||Less/Create/MissionSettings")]
+        public static void CreateAsset()
+        {
+            var newObj = ScriptableObjectUtility.CreateAsset<MissionSettings>("Assets/HigherOrLower/MissionSettings/");
+            newObj.Setup();
+        }
+
+        public void Setup()
+        {
+        }
     }
 }
