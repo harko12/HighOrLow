@@ -303,7 +303,7 @@ namespace HighOrLow
         {
             EventMonitor.StartEvent(eventId);
             PlayerData.myWallet -= m.Cost;
-            yield return ProgressPanel.WalletInfo.HandleWalletAdjustment(eventId, PlayerData.myWallet);
+            yield return ProgressPanel.WalletInfo.UpdateWalletAndDisplayAsync(eventId, PlayerData.myWallet);
             yield return new WaitForSeconds(.5f);
             EventMonitor.EndEvent(eventId);
             yield return null;
@@ -334,7 +334,7 @@ namespace HighOrLow
             }
             ProgressPanel.ToggleMenu();
             yield return new WaitForSeconds(1f);
-            yield return ProgressPanel.WalletInfo.HandleWalletAdjustment(eventId, PlayerData.myWallet);
+            yield return ProgressPanel.WalletInfo.UpdateWalletAndDisplayAsync(eventId, PlayerData.myWallet);
             ProgressPanel.UpdateStages(PlayerData);
             ProgressPanel.MissionView.UpdateMissionButtons(PlayerData);
             // clean up global game variables

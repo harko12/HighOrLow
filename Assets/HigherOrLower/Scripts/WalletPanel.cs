@@ -27,23 +27,28 @@ namespace HighOrLow
             return w.CanAfford(myWallet);
         }
 
-        public void UpdateInfo(Wallet w, bool instant = true)
+        public void onStageStart(string eventId)
+        {
+            myWallet.Wipe();
+            UpdateWalletAndDisplay(myWallet);
+        }
+
+        /// <summary>
+        /// Update the wallet of the panel and the display
+        /// </summary>
+        /// <param name="w"></param>
+        /// <remarks>will be instant</remarks>
+        public void UpdateWalletAndDisplay(Wallet w)
         {
             myWallet.Load(w.ToJson());
-            coinValue.SetValue(w.Coins, instant);
-            tokenValue.SetValue(w.Tokens, instant);
-            timeValue.SetValue(w.Time, instant);
+            coinValue.SetValue(w.Coins);
+            tokenValue.SetValue(w.Tokens);
+            timeValue.SetValue(w.Time);
         }
 
         public void OnRoundEnd(string eventId, RoundResultInfo roundInfo)
         {
-            StartCoroutine(HandleWalletAdjustment(eventId, roundInfo.MyMission.OverallResult.EarnedLoot));
-        }
-
-        public void onStageStart(string eventId)
-        {
-            myWallet.Wipe();
-            UpdateInfo(myWallet);
+            StartCoroutine(UpdateWalletAndDisplayAsync(eventId, roundInfo.MyMission.OverallResult.EarnedLoot));
         }
 
         /// <summary>
@@ -53,9 +58,10 @@ namespace HighOrLow
         /// <param name="newWallet">new wallet value to adjust to. </param>
         /// <remarks>This is NOT intended to do the math on the player's wallet, only on a display wallet</remarks>
         /// <returns></returns>
-        public IEnumerator HandleWalletAdjustment(string eventId, Wallet newWallet)
+        public IEnumerator UpdateWalletAndDisplayAsync(string eventId, Wallet newWallet)
         {
             //EventMonitor.StartEvent(eventId);
+            myWallet.Load(newWallet.ToJson());
 
             timeValue.SetValue(newWallet.Time, false);
             while (timeValue.Updating)

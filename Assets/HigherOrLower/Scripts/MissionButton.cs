@@ -49,8 +49,8 @@ namespace HighOrLow
         {
             MissionIndex = missionIndex;
             MissionText.text = m.Description();
-            PrizeWallet.UpdateInfo(m.PrizePurse, true);
-            CostWallet.UpdateInfo(m.Cost, true);
+            PrizeWallet.UpdateWalletAndDisplay(m.PrizePurse);
+            CostWallet.UpdateWalletAndDisplay(m.Cost);
             switch (m.MissionType)
             {
                 case MissionTypes.ByRound:

@@ -44,11 +44,11 @@ public class WalletPanelTester : MonoBehaviour {
         {
             if (instantUpdates)
             {
-                wp.UpdateInfo(testWallet);
+                wp.UpdateWalletAndDisplay(testWallet);
             }
             else
             {
-                StartCoroutine(wp.HandleWalletAdjustment("", testWallet));
+                StartCoroutine(wp.UpdateWalletAndDisplayAsync("", testWallet));
             }
         }
     }

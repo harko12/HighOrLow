@@ -40,7 +40,7 @@ namespace HighOrLow
                 }
             }
             UpdateStages(p);
-            WalletInfo.UpdateInfo(p.myWallet);
+            WalletInfo.UpdateWalletAndDisplay(p.myWallet);
         }
 
         public void UpdateStages(GamePlayer p)
