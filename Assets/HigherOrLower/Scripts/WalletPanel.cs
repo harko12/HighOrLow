@@ -9,15 +9,27 @@ namespace HighOrLow
 
     public class WalletPanel : MonoBehaviour {
         public WalletValue coinValue, tokenValue, timeValue;
-        private Wallet myWallet;
+        public Wallet myWallet;
 
         public void Awake()
         {
             myWallet = new Wallet();
         }
 
+        /// <summary>
+        /// A way to compare the wallet of a panel to an outside wallet to see if the outside wallet can afford the one in the panel
+        /// </summary>
+        /// <param name="w"></param>
+        /// <remarks>Kind of backwards, but I didn't want to expose the panel's wallet publicly</remarks>
+        /// <returns></returns>
+        public bool IsAffordableBy(Wallet w)
+        {
+            return w.CanAfford(myWallet);
+        }
+
         public void UpdateInfo(Wallet w, bool instant = true)
         {
+            myWallet.Load(w.ToJson());
             coinValue.SetValue(w.Coins, instant);
             tokenValue.SetValue(w.Tokens, instant);
             timeValue.SetValue(w.Time, instant);

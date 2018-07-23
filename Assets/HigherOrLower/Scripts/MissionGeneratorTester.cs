@@ -31,7 +31,7 @@ namespace HighOrLow
             if (Application.isPlaying)
             {
                 myMissionPanel.ClearMissions();
-                myMissionPanel.UpdateMissions(testPlayer, missions);
+                myMissionPanel.GenerateMissionsButtons(testPlayer, missions);
             }
         }
 

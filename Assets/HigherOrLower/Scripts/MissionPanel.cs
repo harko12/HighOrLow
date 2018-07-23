@@ -29,7 +29,7 @@ public class MissionPanel : MonoBehaviour {
         }
     }
 
-    public void UpdateMissions(GamePlayer p, Mission[] missions)
+    public void GenerateMissionsButtons(GamePlayer p, Mission[] missions)
     {
         for (var lcv = 0; lcv < missions.Length; lcv++)
         {
@@ -42,4 +42,12 @@ public class MissionPanel : MonoBehaviour {
         }
     }
 
+    public void UpdateMissionButtons(GamePlayer p)
+    {
+        var mbScripts = missionButtonPool.parentTransform.GetComponentsInChildren<MissionButton>();
+        foreach (var mbScript in mbScripts)
+        {
+            mbScript.CanPlay = mbScript.CostWallet.IsAffordableBy(p.myWallet);
+        }
+    }
 }

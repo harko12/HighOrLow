@@ -78,7 +78,7 @@ public class Stage : MonoBehaviour {
         var missions = MissionGenerator.GetInstance().GenerateMissions(p, StageInfo, 4);
         gameManager.SetCurrentMissions(missions);
         gameManager.ProgressPanel.MissionView.ClearMissions();
-        gameManager.ProgressPanel.MissionView.UpdateMissions(p, missions);
+        gameManager.ProgressPanel.MissionView.GenerateMissionsButtons(p, missions);
         gameManager.ProgressPanel.MissionView.ToggleMissions();
     }
 }

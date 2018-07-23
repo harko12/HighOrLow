@@ -336,6 +336,7 @@ namespace HighOrLow
             yield return new WaitForSeconds(1f);
             yield return ProgressPanel.WalletInfo.HandleWalletAdjustment(eventId, PlayerData.myWallet);
             ProgressPanel.UpdateStages(PlayerData);
+            ProgressPanel.MissionView.UpdateMissionButtons(PlayerData);
             // clean up global game variables
             Round = 1;
             EventMonitor.EndEvent(eventId);
@@ -380,6 +381,7 @@ namespace HighOrLow
                 currentMission.OverallResult.TimeRemaining = currentMission.TotalSeconds;
             }
 
+            Debug.LogFormat("starting mission with {0} seconds.", currentMission.OverallResult.TimeRemaining);
 
             yield return StartCoroutine(StageStart());
 
