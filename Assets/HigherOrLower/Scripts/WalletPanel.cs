@@ -11,13 +11,13 @@ namespace HighOrLow
         public WalletValue coinValue, tokenValue, timeValue;
         private Wallet myWallet;
 
+        public void Awake()
+        {
+            myWallet = new Wallet();
+        }
+
         public void UpdateInfo(Wallet w, bool instant = true)
         {
-            if (myWallet == null)
-            {
-                myWallet = new Wallet();
-            }
-
             coinValue.SetValue(w.Coins, instant);
             tokenValue.SetValue(w.Tokens, instant);
             timeValue.SetValue(w.Time, instant);
@@ -30,7 +30,7 @@ namespace HighOrLow
 
         public void onStageStart(string eventId)
         {
-            myWallet = new Wallet();
+            myWallet.Wipe();
             UpdateInfo(myWallet);
         }
 

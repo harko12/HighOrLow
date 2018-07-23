@@ -51,7 +51,7 @@ namespace HighOrLow
             LossColor = myCurrency.LossColor;
             GainColor = myCurrency.GainColor;
             ValueText.color = NeutralColor;
-            SetValue(0f);
+            //SetValue(0f);
         }
 
         public void SetTextColorNeutral()

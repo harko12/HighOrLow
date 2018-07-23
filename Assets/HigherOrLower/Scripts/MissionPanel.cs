@@ -8,7 +8,6 @@ using HighOrLow;
 public class MissionPanel : MonoBehaviour {
     private Animator mAnim;
 
-    public GameObject missionButtonPrefab;
     public Transform contentRoot;
     public ObjectPooler missionButtonPool;
 
@@ -36,10 +35,10 @@ public class MissionPanel : MonoBehaviour {
         {
             var thisMission = missions[lcv];
             var mb = missionButtonPool.GetPooledObject();
+            mb.SetActive(true);
             var mbScript = mb.GetComponent<MissionButton>();
             mbScript.SetMission(thisMission, lcv);
             mbScript.CanPlay = p.myWallet.CanAfford(thisMission.Cost);
-            mb.SetActive(true);
         }
     }
 
