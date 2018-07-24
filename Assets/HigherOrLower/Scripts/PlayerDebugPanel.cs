@@ -59,6 +59,13 @@ public class PlayerDebugPanel : MonoBehaviour {
         }
     }
 
+    public void MoreMoney()
+    {
+        mPlayer.myWallet += new Wallet() { Coins = 10, Tokens = 20, Time = 120 };
+        pPanel.WalletInfo.UpdateWalletAndDisplay(mPlayer.myWallet);
+        pPanel.MissionView.UpdateMissionButtons(mPlayer);
+    }
+
     public void UpdateClicked()
     {
         parseValues();

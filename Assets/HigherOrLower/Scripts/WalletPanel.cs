@@ -9,7 +9,12 @@ namespace HighOrLow
 
     public class WalletPanel : MonoBehaviour {
         public WalletValue coinValue, tokenValue, timeValue;
-        public Wallet myWallet;
+        private Wallet myWallet;
+
+        public string WalletValueDescription()
+        {
+            return myWallet.ToString();
+        }
 
         public void Awake()
         {
