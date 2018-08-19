@@ -75,7 +75,7 @@ public class LEDRendering{
         return wrapped;
     }
 
-    public enum GraphType { Horizontal, Vertical, DiagonalX, DiagonalXFrom0 }
+    public enum GraphType { Horizontal, Vertical, DiagonalX, Square, Diamond, DiagonalXFrom0 }
 
     public static void Graph(GraphType gType, LEDPanel panel, int startX, int startY, int count, bool invertX = false, bool invertY = false)
     {
@@ -87,11 +87,17 @@ public class LEDRendering{
             case GraphType.Vertical:
                 VerticalLines(panel, startX, startY, count, invertX, invertY);
                 break;
+            case GraphType.Square:
+                Square(panel, startX, startY, count, invertX, invertY);
+                break;
             case GraphType.DiagonalXFrom0:
                 DiagonalLinesByXAxisFrom0(panel, startX, startY, count, invertX, invertY);
                 break;
             case GraphType.DiagonalX:
                 DiagonalLinesByXAxis(panel, startX, startY, count, invertX, invertY);
+                break;
+            case GraphType.Diamond:
+                Diamond(panel, startX, startY, count, invertX, invertY);
                 break;
         }
     }
@@ -137,6 +143,130 @@ public class LEDRendering{
         }
         RenderFromArray(panel, values, invertX, invertY);
     }
+
+    private static void Square(LEDPanel panel, int startX, int startY, int count, bool invertX = false, bool invertY = false)
+    {
+        panel.ClearLED();
+        // boiler plate
+        int xIncrement = 1;
+        int yIncrement = 1;
+        var sqrt = Mathf.Sqrt(count);
+        var width = (int)System.Math.Truncate(sqrt);
+        if (sqrt > width)
+        {
+            width += 1;
+        }
+
+        int lowX = 0, highX = lowX + width;
+        int lowY = 0, highY = lowY + width;
+        int lcvX = startX;
+        int lcvY = startY;
+        //
+        int[,] values = new int[panel.LEDArraySize, panel.LEDArraySize];
+        int widthLcv = 0;
+        for (int lcv = 0; lcv < count; lcv++)
+        {
+            values[lcvX, lcvY] = 1;
+            IncrementValue(ref lcvX, panel.LEDArraySize, xIncrement);
+            widthLcv++;
+            if (widthLcv >= width)
+            {
+                IncrementValue(ref lcvY, panel.LEDArraySize, yIncrement);
+                lcvX = startX;
+                widthLcv = 0;
+            }
+        }
+        RenderFromArray(panel, values, invertX, invertY);
+    }
+
+    private static void Diamond(LEDPanel panel, int startX, int startY, int count, bool invertX = false, bool invertY = false)
+    {
+        panel.ClearLED();
+
+        //
+        int[,] values = new int[panel.LEDArraySize, panel.LEDArraySize];
+        if (count == 0)
+        {
+            RenderFromArray(panel, values, invertX, invertY);
+            return; // early exit, since we're not using a normal for loop structure here
+        }
+
+        int radius = 0;
+        int lcv = 0;
+        bool done = false;
+        var overflow = 10000;
+        while(!done && lcv < overflow)
+        {
+            if (radius == 0)
+            {
+                values[startX, startY] = 1; // set center value
+                lcv++;
+                done = lcv >= count;
+            }
+            else
+            {
+                Vector2Int point1 = Vector2Int.zero, point2 = Vector2Int.zero;
+                point1.Set(startX + radius, startY);
+                point2.Set(startX, startY + radius);
+
+                lcv = PlotLine(panel, ref values, point1, point2, lcv, count);
+                done = lcv >= count;
+                if (done) break;
+
+                point1 = point2;
+                point2.Set(startX - radius, startY);
+
+                lcv = PlotLine(panel, ref values, point1, point2, lcv, count);
+                done = lcv >= count;
+                if (done) break;
+
+                point1 = point2;
+                point2.Set(startX, startY - radius);
+
+                lcv = PlotLine(panel, ref values, point1, point2, lcv, count);
+                done = lcv >= count;
+                if (done) break;
+
+                point1 = point2;
+                point2.Set(startX + radius, startY);
+
+                lcv = PlotLine(panel, ref values, point1, point2, lcv, count);
+                done = lcv >= count;
+                if (done) break;
+
+            }
+            radius++;
+        }
+        RenderFromArray(panel, values, invertX, invertY);
+    }
+
+    private static int PlotLine(LEDPanel panel, ref int [,] values, Vector2Int start, Vector2Int end, int lcv, int count)
+    {
+        var xInc = start.x < end.x ? 1 : -1;
+        var yInc = start.y < end.y ? 1 : -1;
+
+        Vector2Int p = start;
+        Vector2Int increment = new Vector2Int(xInc, yInc);
+        int cutoff = 0;
+        while (lcv < count && cutoff < 10000)
+        {
+            if (p == end)
+            {
+                break;
+            }
+
+            if (panel.InBounds(p) && !panel.IsSet(p.x, p.y))
+            {
+                values[p.x, p.y] = 1;
+                lcv++;
+            }
+            p += increment;
+            cutoff++;
+
+        }
+        return lcv;
+    }
+
 
     private static void DiagonalLinesByXAxisFrom0(LEDPanel panel, int startX, int startY, int count, bool invertX = false, bool invertY = false)
     {

@@ -53,20 +53,37 @@ public class LEDPanel : MonoBehaviour {
         {
             SetLED(x, y, false);
         });
-        //for (int x = 0; x < LEDArraySize; x++)
-        //{
-        //    for (int y = 0; y < LEDArraySize; y++)
-        //    {
-        //        SetLED(x, y, false);
-        //    }
-        //}
+    }
+
+    private int GetLEDIndex(int x, int y)
+    {
+        return ((y * LEDArraySize) + x);
     }
 
     public void SetLED(int x, int y, bool on)
     {
         var c = on ? OnColor : OffColor;
-        var index = ((y * LEDArraySize) + x);
+        var index = GetLEDIndex(x, y);
         LEDArray[index].color = c;
+    }
+
+    public bool IsSet(int x, int y)
+    {
+        var index = GetLEDIndex(x, y);
+        return LEDArray[index].color == OnColor;
+    }
+
+    public bool InBounds(int x, int y)
+    {
+        var p = new Vector2Int(x, y);
+        return InBounds(p);
+    }
+
+    public bool InBounds(Vector2Int point)
+    {
+        return (point.x >= 0 && point.x < LEDArraySize
+            && point.y >= 0 && point.y < LEDArraySize);
+
     }
 
     public void DrawLine(Vector2 start, Vector2 end, bool on)

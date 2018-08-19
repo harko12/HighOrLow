@@ -22,6 +22,3 @@ recovery -= progress(current round / rounds) * recoveryfalloff ?  maybe:
 recovery -= curve(progress(current round / rounds)) * recoveryfalloff ?  that allows for more variety, with different types of curves (early difficulty to easier, slowly getting harder, difficulty spike in the middle, etc..)
 Combos need to give some back, or be rewarded.
 
-
-
-

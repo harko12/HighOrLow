@@ -13,7 +13,7 @@ namespace HighOrLow
 
         public string WalletValueDescription()
         {
-            return myWallet.ToString();
+            return myWallet != null ? myWallet.ToString() : "No wallet set";
         }
 
         public void Awake()

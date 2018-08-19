@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd9b000b4e52a5e48845c918d02cf10d, type: 3}
+  m_Name: triangle test
+  m_EditorClassIdentifier: 
+  definitions:
+  - name: triangle test
+    myType: 2
+    limits:
+    - 0
+    - 2
+    - 4
+    IsValid: 1
+  - name: triangle test 1
+    myType: 2
+    limits:
+    - 1
+    - 1.5
+    - 3
+    IsValid: 0
+  - name: triangle test 2
+    myType: 2
+    limits:
+    - 2
+    - 3
+    - 4
+    IsValid: 1
+  IsValid: 0
