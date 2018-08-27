@@ -49,6 +49,21 @@ namespace HighOrLow
             EarnedLoot = new Wallet();
         }
 
+        public void Reset()
+        {
+            EarnedLoot.Wipe();
+            Combo = 0;
+            MaxStreak = 0;
+            Failures = 0;
+            NearMisses = 0;
+            TimeRemaining = 0f;
+            RoundTime = 0f;
+            MissionTime = 0f;
+            Progress = 0f;
+            Succeeded = false;
+            ResultType = MissionResultType._Unknown;
+        }
+
     }
 
     [System.Serializable]
@@ -80,10 +95,15 @@ namespace HighOrLow
         /// </summary>
         public float BaseRecoverySeconds;
         /// <summary>
+        /// Recovery time adjusted per round
+        /// </summary>
+        private float RecoverySeconds;
+        /// <summary>
         /// the amount by which the recoverytime decreases every round.  Higher the number, 
         /// the less time you get back
         /// </summary>
-        public float RecoveryFalloff = 0;
+        public float BaseRecoveryFalloff = 0;
+        private float RecoveryFalloff;
 
         /// <summary>
         /// Interval at which to deliver a combo reward
@@ -109,7 +129,7 @@ namespace HighOrLow
         /// </summary>
         public void Validate()
         {
-            RecoveryFalloff = Mathf.Clamp(RecoveryFalloff, MIN_RECOVERY_FALLOFF, MAX_RECOVERY_FALLOFF);
+            BaseRecoveryFalloff = Mathf.Clamp(BaseRecoveryFalloff, MIN_RECOVERY_FALLOFF, MAX_RECOVERY_FALLOFF);
             Chances = Mathf.Clamp(Chances, 0, MAX_CHANCES);
             switch (MissionType)
             {
@@ -174,9 +194,9 @@ namespace HighOrLow
                     timeDifficulty01 = StageInfo.Complexity / BaseRecoverySeconds;
                     // because the max recovery falloff is .05,
                     // we see how this one compares to that (1 most difficult, 0 least difficult)
-                    timeDifficulty02 = (RecoveryFalloff * 100) / 5;
+                    timeDifficulty02 = (BaseRecoveryFalloff * 100) / 5;
                     Vector2 weight = new Vector2(.5f, .5f);
-                    if (RecoveryFalloff < .1f)
+                    if (BaseRecoveryFalloff < .1f)
                     {
                         weight.x = .8f;
                         weight.y = .2f;
@@ -270,7 +290,7 @@ namespace HighOrLow
                         }
                         break;
                     case MissionTypes.Survival:
-                        RecoveryFalloff += recoveryFalloffMultiplier * .001f;
+                        BaseRecoveryFalloff += recoveryFalloffMultiplier * .001f;
                         if (iterations % 5 == 0)
                         {
                             BaseRecoverySeconds += timeMultiplier * .05f;
@@ -337,9 +357,12 @@ namespace HighOrLow
             switch (MissionType)
             {
                 case MissionTypes.Sprint:
-                case MissionTypes.Survival:
                     OverallResult.Progress = overallProgress;
                     OverallResult.MissionTime = OverallResult.TimeRemaining;
+                    break;
+                case MissionTypes.Survival:
+                    OverallResult.MissionTime = OverallResult.TimeRemaining;
+                    OverallResult.Progress = OverallResult.MissionTime > 0 ? 0 : 1; // progress stays at 0 until time runs out
                     break;
                 case MissionTypes.ByRound:
                     OverallResult.Progress = roundProgress;
@@ -385,7 +408,7 @@ namespace HighOrLow
 
             // check for a resulttype (unknown means it's still playing, or the max rounds being exceeded
             if (OverallResult.ResultType != MissionResultType._Unknown
-                || Rounds != 0 && Round > Rounds)
+                || RoundsExceeded(Round, Rounds))
             {
                 continueMission = false;
             }
@@ -394,6 +417,32 @@ namespace HighOrLow
             return continueMission;
         }
 
+        /// <summary>
+        /// Determine if the currentRound has passed the allowed limit for this mission
+        /// </summary>
+        /// <param name="currentRound"></param>
+        /// <param name="maxRounds"></param>
+        /// <returns></returns>
+        public bool RoundsExceeded(int currentRound, int maxRounds)
+        {
+            var exceeded = false;
+            switch (MissionType)
+            {
+                case MissionTypes.Sprint:
+                case MissionTypes.ByRound:
+                    exceeded = maxRounds != 0 && currentRound > maxRounds;
+                    break;
+                case MissionTypes.Survival: // survival is not by round, but it does use the rounds to adjust its time calculations
+                    exceeded = false;
+                    break;
+            }
+            return exceeded;
+        }
+
+        /// <summary>
+        /// Apply any adjustments to the time remaining that may apply for this mission based on the round result
+        /// </summary>
+        /// <param name="roundResult"></param>
         public void AdjustTime(RoundResultInfo roundResult)
         {
             float adjustment = 0;
@@ -403,18 +452,38 @@ namespace HighOrLow
                 case MissionTypes.ByRound:
                     break;
                 case MissionTypes.Survival:
-                    if (roundResult.State == FinishState.Right)
-                    {
-                        adjustment = BaseRecoverySeconds;
-                    }
-                    else if (roundResult.State == FinishState.Wrong)
-                    {
-                        adjustment = BaseRecoverySeconds * -.5f;
-                    }
+                    adjustment = GetTimeAdjustmentForSurvival(roundResult.State, roundResult.Round);
                     OverallResult.TimeRemaining += adjustment;
                     break;
             }
             roundResult.TimeAdjustment = adjustment;
+        }
+
+        /// <summary>
+        /// Get the time adjustment for Survival mode
+        /// </summary>
+        /// <param name="answered"></param>
+        /// <remarks>It is intended to have a slowly decreasing return as you play, to increase difficulty</remarks>
+        /// <returns></returns>
+        public float GetTimeAdjustmentForSurvival(FinishState answered, int round)
+        {
+            float adjustment = 0f;
+
+            // based on the max rounds, we want to adjust the falloff such that
+            // by the time the target round is reached, no time is being added.  At that point
+            // they are on skill and combos alone.
+            var falloff = ((float)round / (float)Rounds) * BaseRecoverySeconds;
+            adjustment = BaseRecoverySeconds - falloff;
+
+            if (answered == FinishState.Right)
+            {
+            }
+            else if (answered == FinishState.Wrong)
+            {
+                adjustment *= -.5f; // cut them some slack for messing up ?
+            }
+            Debug.LogFormat("round {0} survival adjustment time: {1}", round, adjustment);
+            return adjustment;
         }
 
         public void HandlePoints(RoundResultInfo roundResult)

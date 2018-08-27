@@ -358,8 +358,7 @@ namespace HighOrLow
             // coroutine to show deducting the cost
             ProgressPanel.ToggleMenu();
 
-            currentMission.OverallResult.ResultType = MissionResultType._Unknown;
-            currentMission.OverallResult.TimeRemaining = 0f;
+            currentMission.OverallResult.Reset();
             if (currentMission.UseOverallTime)
             {
                 currentMission.OverallResult.TimeRemaining = currentMission.TotalSeconds;

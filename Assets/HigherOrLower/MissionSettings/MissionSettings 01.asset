@@ -22,12 +22,12 @@ MonoBehaviour:
     MAX_RECOVERY_FALLOFF: 0.05
     MIN_RECOVERY_FALLOFF: 0.001
     MissionType: 0
-    TotalSeconds: 2
+    TotalSeconds: 5
     TimeExchangeRate: 0
-    BaseRecoverySeconds: 0.2
-    RecoveryFalloff: 0
+    BaseRecoverySeconds: 1
+    BaseRecoveryFalloff: 0
     RewardComboInterval: 25
-    Rounds: 20
+    Rounds: 100
     Chances: 0
     CanWager: 0
     Cost:
@@ -50,7 +50,7 @@ MonoBehaviour:
     TotalSeconds: 30
     TimeExchangeRate: 0
     BaseRecoverySeconds: 0
-    RecoveryFalloff: 0
+    BaseRecoveryFalloff: 0
     RewardComboInterval: 0
     Rounds: 10
     Chances: 0
@@ -75,7 +75,7 @@ MonoBehaviour:
     TotalSeconds: 0
     TimeExchangeRate: 0
     BaseRecoverySeconds: 1
-    RecoveryFalloff: 0
+    BaseRecoveryFalloff: 0
     RewardComboInterval: 0
     Rounds: 10
     Chances: 0

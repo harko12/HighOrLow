@@ -3517,7 +3517,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: HighOrLow.RoundStartEvent, Assembly-CSharp, Version=1.0.6812.3394,
+    m_TypeName: HighOrLow.RoundStartEvent, Assembly-CSharp, Version=1.0.6813.3444,
       Culture=neutral, PublicKeyToken=null
   OnRoundEnd:
     m_PersistentCalls:
@@ -3566,7 +3566,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: HighOrLow.RoundEndEvent, Assembly-CSharp, Version=1.0.6812.3394, Culture=neutral,
+    m_TypeName: HighOrLow.RoundEndEvent, Assembly-CSharp, Version=1.0.6813.3444, Culture=neutral,
       PublicKeyToken=null
   OnStageChosen:
     m_PersistentCalls:
@@ -3582,7 +3582,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: HighOrLow.MissionEvent, Assembly-CSharp, Version=1.0.6812.3394, Culture=neutral,
+    m_TypeName: HighOrLow.MissionEvent, Assembly-CSharp, Version=1.0.6813.3444, Culture=neutral,
       PublicKeyToken=null
   OnStageStart:
     m_PersistentCalls:
@@ -3653,7 +3653,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: HighOrLow.MonitoredEvent, Assembly-CSharp, Version=1.0.6812.3394,
+    m_TypeName: HighOrLow.MonitoredEvent, Assembly-CSharp, Version=1.0.6813.3444,
       Culture=neutral, PublicKeyToken=null
   OnStageEnd:
     m_PersistentCalls:
@@ -3691,7 +3691,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-    m_TypeName: HighOrLow.MissionEvent, Assembly-CSharp, Version=1.0.6812.3394, Culture=neutral,
+    m_TypeName: HighOrLow.MissionEvent, Assembly-CSharp, Version=1.0.6813.3444, Culture=neutral,
       PublicKeyToken=null
   OnTimerUpdate:
     m_PersistentCalls:
@@ -3707,12 +3707,12 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: HighOrLow.TimerEvent, Assembly-CSharp, Version=1.0.6812.3394, Culture=neutral,
+    m_TypeName: HighOrLow.TimerEvent, Assembly-CSharp, Version=1.0.6813.3444, Culture=neutral,
       PublicKeyToken=null
   OnTimeAdjusted:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: HighOrLow.TimeAdjustedEvent, Assembly-CSharp, Version=1.0.6812.3394,
+    m_TypeName: HighOrLow.TimeAdjustedEvent, Assembly-CSharp, Version=1.0.6813.3444,
       Culture=neutral, PublicKeyToken=null
   ProgressPanel: {fileID: 1038151730}
   Levels: {fileID: 11400000, guid: 50bdc0ccfa38d874fb132fd0b50259a3, type: 2}
@@ -4119,12 +4119,12 @@ Prefab:
     - target: {fileID: 224481501522793932, guid: 9649541d73dd20a439f7e8f5d4d2dc49,
         type: 2}
       propertyPath: m_AnchoredPosition.x
-      value: -0.00011745995
+      value: -0.000056861572
       objectReference: {fileID: 0}
     - target: {fileID: 224481501522793932, guid: 9649541d73dd20a439f7e8f5d4d2dc49,
         type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: -0.000021473837
+      value: -0.00006373303
       objectReference: {fileID: 0}
     - target: {fileID: 224765145724526048, guid: 9649541d73dd20a439f7e8f5d4d2dc49,
         type: 2}
@@ -4134,12 +4134,12 @@ Prefab:
     - target: {fileID: 224456264187742712, guid: 9649541d73dd20a439f7e8f5d4d2dc49,
         type: 2}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 0.00000011920929
       objectReference: {fileID: 0}
     - target: {fileID: 224236411393641874, guid: 9649541d73dd20a439f7e8f5d4d2dc49,
         type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: 0.000006372707
+      value: -0.00001520979
       objectReference: {fileID: 0}
     - target: {fileID: 114227880640133054, guid: 9649541d73dd20a439f7e8f5d4d2dc49,
         type: 2}
