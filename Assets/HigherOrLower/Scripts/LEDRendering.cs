@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System.Linq;
+using System.Collections.Generic;
 
 public class LEDRendering{
 
@@ -179,18 +181,48 @@ public class LEDRendering{
         RenderFromArray(panel, values, invertX, invertY);
     }
 
+    private static Dictionary<int, int> DiamondBoundaries = new Dictionary<int, int>()
+    {
+        {1, 0 },
+        {5, 1 },
+        {13, 2 },
+        {25, 3 }
+    };
+
     private static void Diamond(LEDPanel panel, int startX, int startY, int count, bool invertX = false, bool invertY = false)
     {
         panel.ClearLED();
-
-        //
+        // early exit for 0 count, since we're not using a normal for loop structure here
         int[,] values = new int[panel.LEDArraySize, panel.LEDArraySize];
         if (count == 0)
         {
             RenderFromArray(panel, values, invertX, invertY);
-            return; // early exit, since we're not using a normal for loop structure here
+            return;
         }
-
+        /*
+        // normalize the diamond data so we always have a shape that looks good
+        bool adjusted = false;
+        foreach (int val in DiamondBoundaries.Keys)
+        {
+            if (count <= val)
+            {
+                count = val;
+                var rad = DiamondBoundaries[val];
+                startX = Mathf.Clamp(startX, rad, panel.LEDArraySize - 1 - rad);
+                startY = Mathf.Clamp(startY, rad, panel.LEDArraySize - 1 - rad);
+                adjusted = true;
+                break;
+            }
+        }
+        if (!adjusted)
+        {
+            var lastEntry = DiamondBoundaries.Last();
+            count = lastEntry.Key;
+            var rad = lastEntry.Value;
+            startX = Mathf.Clamp(startX, rad, panel.LEDArraySize - 1 - rad);
+            startY = Mathf.Clamp(startY, rad, panel.LEDArraySize - 1 - rad);
+        }
+        */
         int radius = 0;
         int lcv = 0;
         bool done = false;

@@ -83,6 +83,12 @@ namespace HighOrLow
     }
 
     [System.Serializable]
+    public class RoundStartEvent : UnityEvent<string, GameProgression.GameRound>
+    {
+
+    }
+
+    [System.Serializable]
     public class MonitoredEvent : UnityEvent<string>
     {
 
@@ -106,13 +112,11 @@ namespace HighOrLow
         public enum ButtonState { NONE = 0, LEFT = 1, MID = 2, RIGHT = 3 };
         public LEDPanel LED1, LED2;
 
-        public Text Line1, Line2;
-
         public Button ButtonLeft, ButtonMid, ButtonRight;
         public int Round;
 
         [SerializeField]
-        public MonitoredEvent OnRoundStart;
+        public RoundStartEvent OnRoundStart;
         private const string OnRoundStartKey = "HighLowGame.OnRoundStart";
         [SerializeField]
         public RoundEndEvent OnRoundEnd;
@@ -263,9 +267,9 @@ namespace HighOrLow
             yield return null;
         }
 
-        public IEnumerator RoundStart()
+        public IEnumerator RoundStart(GameProgression.GameRound round)
         {
-            OnRoundStart.Invoke(OnRoundStartKey);
+            OnRoundStart.Invoke(OnRoundStartKey, round);
             while (EventMonitor.IsRunning(OnRoundStartKey))
             {
                 yield return null;
@@ -344,26 +348,6 @@ namespace HighOrLow
             StopCoroutine("Game");
         }
 
-        public void onStageSetup(string eventId)
-        {
-            LED1.ClearLED();
-            LED2.ClearLED();
-            LcdWrite("", "");
-        }
-
-        private IEnumerator Instructions()
-        {
-            LcdWrite("Welcome!", "Read Closely");
-            yield return new WaitForSeconds(2);
-            LcdWrite("Look Closely", "At the LEDs");
-            yield return new WaitForSeconds(2);
-            LcdWrite("If it says high-", "er, pick higher.");
-            yield return new WaitForSeconds(2);
-            LcdWrite("Lower, pick the ", "Lower number.");
-            yield return new WaitForSeconds(2);
-            LcdWrite("Easy", "      Peasy.");
-            yield return new WaitForSeconds(2);
-        }
         private GameProgression.GameRound mCurrentRoundData;
         private IEnumerator Game()
         {
@@ -398,7 +382,7 @@ namespace HighOrLow
             while (continueMission)
             {
                 mCurrentRoundData = GameProgression.GetRound(PlayerData.Level, PlayerData.Stage, Round, LED1.LEDArraySize);
-                yield return StartCoroutine(RoundStart());
+                yield return StartCoroutine(RoundStart(mCurrentRoundData));
                 var highMessage = mCurrentRoundData.High ? "     HIGHER!   " : "     LOWER!   "; // change this to an event or setter call 
                 ButtonState correctBtn = mCurrentRoundData.Led1Right ? ButtonState.LEFT : ButtonState.RIGHT;
                 ButtonState incorrectBtn = correctBtn == ButtonState.LEFT ? ButtonState.RIGHT : ButtonState.LEFT;
@@ -429,7 +413,7 @@ namespace HighOrLow
                     yield return StartCoroutine(TimerUpdate(currentTimeValues));
                     progressDashCount = 16 - (Mathf.RoundToInt(16 * currentMission.OverallResult.Progress));
                     var progressMessage = progressDashCount > 0 ? new string('-', progressDashCount) : "";
-                    LcdWrite(highMessage, progressMessage);
+
                     //              Debug.LogFormat("progress: {0}", progress);
                     if (currentMission.OverallResult.Progress >= 1)
                     {
@@ -472,13 +456,5 @@ namespace HighOrLow
             yield return StartCoroutine(StageComplete(currentMission, roundResult));
             yield return null;
         }
-
-        private void LcdWrite(string l1, string l2)
-        {
-            Line1.text = Line2.text = "";
-            Line1.text = l1;
-            Line2.text = l2;
-        }
-
     }
 }

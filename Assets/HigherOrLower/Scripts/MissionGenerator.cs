@@ -25,18 +25,6 @@ namespace HighOrLow
             mInstance = this;
         }
 
-        // Use this for initialization
-        void Start()
-        {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
-
         public void AdjustValue(ref float value, float percent, float min = 0, float max = 1)
         {
             var minDiff = value - min;

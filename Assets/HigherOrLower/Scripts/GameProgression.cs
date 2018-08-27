@@ -10,6 +10,10 @@ public class GameProgression {
     {
         public int RightValue { get; set; }
         public int WrongValue { get; set; }
+        /// <summary>
+        /// Is this round asking for the higher value
+        /// <remarks>If false, it's asking for the lower</remarks>
+        /// </summary>
         public bool High { get; set; }
         public bool Led1Right { get; set; }
         public float WaitSeconds { get; set; }
@@ -99,12 +103,18 @@ public class GameProgression {
 
         int baseValue = 0;
         int wrongValue = 0;
-        do
+
+        var adjustment = Random.Range(rules.VarianceMin, rules.VarianceMax);
+        if (multiplier > 0)
         {
-            baseValue = Random.Range(1, rules.MaxValue);
-            var adjustment = Random.Range(rules.VarianceMin, rules.VarianceMax) * multiplier;
-            wrongValue = baseValue + adjustment;
-        } while ((baseValue == 0 && wrongValue == 0));
+            baseValue = Random.Range(1, rules.MaxValue - (adjustment + 1));
+        }
+        else
+        {
+            baseValue = Random.Range(1 + adjustment, rules.MaxValue);
+        }
+        wrongValue = baseValue + (adjustment * multiplier);
+
         roundData.RightValue = baseValue;
         roundData.WrongValue = wrongValue;
 
