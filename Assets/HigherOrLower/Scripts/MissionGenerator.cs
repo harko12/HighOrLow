@@ -100,7 +100,10 @@ namespace HighOrLow
                 Rounds = m.Rounds,
                 Chances = m.Chances,
                 PrizePurse = m.PrizePurse,
-                Cost = m.Cost
+                Cost = m.Cost,
+                ComboReward = m.ComboReward,
+                RewardComboInterval = m.RewardComboInterval,
+                BaseRecoveryFalloff = m.BaseRecoveryFalloff
             };
 
             return newMission;

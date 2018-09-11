@@ -26,7 +26,7 @@ MonoBehaviour:
     TimeExchangeRate: 0
     BaseRecoverySeconds: 1
     BaseRecoveryFalloff: 0
-    RewardComboInterval: 25
+    RewardComboInterval: 2
     Rounds: 100
     Chances: 0
     CanWager: 0
@@ -36,6 +36,10 @@ MonoBehaviour:
       Coins: 0
     PrizePurse:
       Time: 30
+      Tokens: 0
+      Coins: 0
+    ComboReward:
+      Time: 0
       Tokens: 0
       Coins: 0
   - MIN_TIMER_VALUE: 1
@@ -63,6 +67,10 @@ MonoBehaviour:
       Time: 0
       Tokens: 5
       Coins: 0
+    ComboReward:
+      Time: 0
+      Tokens: 0
+      Coins: 1
   - MIN_TIMER_VALUE: 1
     MAX_CHANCES: 5
     MIN_ROUNDS: 10
@@ -88,3 +96,7 @@ MonoBehaviour:
       Time: 0
       Tokens: 0
       Coins: 1
+    ComboReward:
+      Time: 0
+      Tokens: 1
+      Coins: 0

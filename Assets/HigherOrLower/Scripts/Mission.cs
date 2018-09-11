@@ -108,14 +108,16 @@ namespace HighOrLow
         /// <summary>
         /// Interval at which to deliver a combo reward
         /// </summary>
+        /// <remarks>also used as the a way to get the multiplier for the combo reward</remarks>
         public int RewardComboInterval = 0;
+        private int ComboMultiplier = 0;
 
         public int Rounds;
         public int Chances;
         public bool CanWager;
         public int Wager { get; set; }
         [SerializeField]
-        public Wallet Cost, PrizePurse;
+        public Wallet Cost, PrizePurse, ComboReward;
         public MissionResult OverallResult { get; set; }
 
         public Mission()
@@ -380,9 +382,9 @@ namespace HighOrLow
         public bool ProcessRoundResult(RoundResultInfo roundResult, ref int Round)
         {
             var continueMission = true;
+            HandleCombo(roundResult);
             // adjust some time, based on the result
             AdjustTime(roundResult);
-            HandleCombo(roundResult);
             HandlePoints(roundResult);
 
             OverallResult.EarnedLoot += roundResult.RoundLoot;
@@ -440,6 +442,42 @@ namespace HighOrLow
         }
 
         /// <summary>
+        /// Calculate the current combo value, update the combomultipier if applicable
+        /// </summary>
+        /// <param name="roundResult"></param>
+        public void HandleCombo(RoundResultInfo roundResult)
+        {
+            ComboMultiplier = 0;
+            switch (roundResult.State)
+            {
+                case FinishState.Right:
+                    OverallResult.Combo++;
+                    break;
+                case FinishState.Wrong:
+                    OverallResult.Combo = 0;
+                    break;
+                case FinishState.Timeout:
+                case FinishState.Quit:
+                    OverallResult.Combo = 0;
+                    break;
+            }
+
+            if (OverallResult.Combo > OverallResult.MaxStreak)
+            {
+                OverallResult.MaxStreak = OverallResult.Combo;
+            }
+            if (RewardComboInterval > 0)
+            {
+                if (OverallResult.Combo % RewardComboInterval == 0)
+                {
+                    ComboMultiplier = OverallResult.Combo / RewardComboInterval;
+                    OverallResult.EarnedLoot += (ComboReward * ComboMultiplier);
+                    Debug.LogFormat("ComboMultiplier set to {0}, added ", ComboMultiplier, (ComboReward * ComboMultiplier));
+                }
+            }
+        }
+
+        /// <summary>
         /// Apply any adjustments to the time remaining that may apply for this mission based on the round result
         /// </summary>
         /// <param name="roundResult"></param>
@@ -482,7 +520,7 @@ namespace HighOrLow
             {
                 adjustment *= -.5f; // cut them some slack for messing up ?
             }
-            Debug.LogFormat("round {0} survival adjustment time: {1}", round, adjustment);
+//            Debug.LogFormat("round {0} survival adjustment time: {1}", round, adjustment);
             return adjustment;
         }
 
@@ -532,22 +570,6 @@ namespace HighOrLow
                         case FinishState.Wrong:
                             break;
                     }
-                    break;
-            }
-        }
-
-        public void HandleCombo(RoundResultInfo roundResult)
-        {
-            switch (roundResult.State)
-            {
-                case FinishState.Right:
-                    OverallResult.Combo++;
-                    break;
-                case FinishState.Wrong:
-                    OverallResult.Combo = 0;
-                    break;
-                case FinishState.Timeout:
-                case FinishState.Quit:
                     break;
             }
         }

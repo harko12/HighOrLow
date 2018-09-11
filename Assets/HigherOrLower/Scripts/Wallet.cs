@@ -54,6 +54,14 @@ public class Wallet
         return w1;
     }
 
+    public static Wallet operator *(Wallet w1, int m)
+    {
+        w1.Time *= m;
+        w1.Tokens *= m;
+        w1.Coins *= m;
+        return w1;
+    }
+
     public bool IsEmpty()
     {
         return (Time == 0
