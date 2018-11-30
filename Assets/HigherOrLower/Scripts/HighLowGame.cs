@@ -18,6 +18,14 @@ namespace HighOrLow
     }
 
     /// <summary>
+    /// mission event class
+    /// </summary>
+    [System.Serializable]
+    public class GameStageEvent : UnityEvent<string, GameStage>
+    {
+    }
+
+    /// <summary>
     /// Timer update information class
     /// </summary>
     public class TimeUpdateInfo
@@ -121,9 +129,15 @@ namespace HighOrLow
         [SerializeField]
         public RoundEndEvent OnRoundEnd;
         private const string OnRoundEndKey = "HighLowGame.OnRoundEnd";
+
         [SerializeField]
-        public MissionEvent OnStageChosen;
-        private const string OnStageChosenKey = "HighLowGame.OnStageChosen";
+        public GameStageEvent OnStageClicked;
+        public const string OnStageClickedKey = "HighLowGame.OnStageClicked";
+
+        [SerializeField]
+        public MissionEvent OnMissionChosen;
+        private const string OnMissionChosenKey = "HighLowGame.OnMissionChosen";
+
         [SerializeField]
         public MonitoredEvent OnStageStart;
         private const string OnStageStartKey = "HighLowGame.OnStageStart";
@@ -237,10 +251,32 @@ namespace HighOrLow
             return m;
         }
 
-        public IEnumerator StageChosen(Mission m)
+        public IEnumerator StageClicked(GameStage stage)
         {
-            OnStageChosen.Invoke(OnStageChosenKey, m);
-            while (EventMonitor.IsRunning(OnStageChosenKey))
+            OnStageClicked.Invoke(OnStageClickedKey, stage);
+            while (EventMonitor.IsRunning(OnStageClickedKey))
+            {
+                yield return null;
+            }
+            GenerateMissions(PlayerData, stage);
+            yield return new WaitForSeconds(2f); // this is a crap way to re-show the buttons, but for now, so be it
+            ProgressPanel.OnShowStages.Invoke();
+            yield return null;
+        }
+
+        public void GenerateMissions(GamePlayer p, GameStage stage)
+        {
+            var missions = MissionGenerator.GetInstance().GenerateMissions(p, stage, 4);
+            SetCurrentMissions(missions);
+            ProgressPanel.MissionView.ClearMissions();
+            ProgressPanel.MissionView.GenerateMissionsButtons(p, missions);
+            ProgressPanel.MissionView.ToggleMissions();
+        }
+
+        public IEnumerator MissionChosen(Mission m)
+        {
+            OnMissionChosen.Invoke(OnMissionChosenKey, m);
+            while (EventMonitor.IsRunning(OnMissionChosenKey))
             {
                 yield return null;
             }
@@ -298,7 +334,7 @@ namespace HighOrLow
             yield return null;
         }
 
-        public void MissionChosen(string eventId, Mission m)
+        public void MissionChosenWrapper(string eventId, Mission m)
         {
             StartCoroutine(RunMissionChosen(eventId, m));
         }
@@ -354,7 +390,7 @@ namespace HighOrLow
             var continueMission = true;
             var currentMission = SetCurrentMission(currentMissionIndex);
 
-            yield return StartCoroutine(StageChosen(currentMission));
+            yield return StartCoroutine(MissionChosen(currentMission));
             // coroutine to show deducting the cost
             ProgressPanel.ToggleMenu();
 

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using HarkoGames;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +17,10 @@ namespace HighOrLow
         public WalletPanel WalletInfo;
         public MissionPanel MissionView;
 
+        public System.Action<int, int> OnHideStages;
+        public System.Action OnShowStages;
+
+
         private void Awake()
         {
             mAnim = GetComponent<Animator>();
@@ -23,6 +28,10 @@ namespace HighOrLow
 
         public void Init(GameStageContainer levelContainer, GamePlayer p)
         {
+            // clear handlers
+            OnHideStages = null;
+            OnShowStages = null;
+
             for (int lcv = 0, length = levelContainer.Levels.Length; lcv < length; lcv++)
             {
                 var lvl = levelContainer.Levels[lcv];
@@ -37,6 +46,8 @@ namespace HighOrLow
                     s.Init(stage, p);
                     s.name = string.Format("Stage {00}", stage.Stage);
                     s.StageInfo = stage;
+                    OnHideStages += s.HideStage;
+                    OnShowStages += s.ShowStage;
                 }
             }
             UpdateStages(p);
@@ -57,6 +68,20 @@ namespace HighOrLow
                     stage.UpdateStage(stage.StageInfo, p);
                 }
             }
+        }
+
+        public void onStageClicked(string eventId, GameStage stage)
+        {
+            StartCoroutine(RunStageClicked(eventId, stage));
+        }
+
+        public IEnumerator RunStageClicked(string eventId, GameStage stage)
+        {
+            EventMonitor.StartEvent(eventId);
+            OnHideStages.Invoke(stage.Level, stage.Stage);
+            yield return new WaitForSeconds(1f);
+            EventMonitor.EndEvent(eventId);
+            yield return null;
         }
 
         public void ToggleMenu()

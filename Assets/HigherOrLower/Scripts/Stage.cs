@@ -10,6 +10,16 @@ public class Stage : MonoBehaviour {
     public Text StageNumber;
     public StageLock mLock;
     public GameStage StageInfo { get; set; }
+    private Vector3 initialRotation, targetRotation;
+    private Vector3 hideVert = new Vector3(0f, 90f, 0f);
+    private Vector3 hideHoriz = new Vector3(90f, 0f, 0f);
+    private float rotDuration = .5f;
+    private float rotTime;
+
+    private void Awake()
+    {
+        initialRotation = transform.rotation.eulerAngles;
+    }
 
     public void Init(GameStage stage, GamePlayer player)
     {
@@ -72,13 +82,60 @@ public class Stage : MonoBehaviour {
     }
 
     public void OnStageClick()
-    { // TODO: maybe break this dependency on gamemanager and make this an event
+    {
         var gameManager = HighLowGame.GetInstance();
-        var p = gameManager.Getplayer();
-        var missions = MissionGenerator.GetInstance().GenerateMissions(p, StageInfo, 4);
-        gameManager.SetCurrentMissions(missions);
-        gameManager.ProgressPanel.MissionView.ClearMissions();
-        gameManager.ProgressPanel.MissionView.GenerateMissionsButtons(p, missions);
-        gameManager.ProgressPanel.MissionView.ToggleMissions();
+        StartCoroutine(gameManager.StageClicked(StageInfo));
+    }
+
+    private void Update()
+    {
+        if (testHide)
+        {
+            testHide = false;
+            HideStage(testLevel, testStage);
+        }
+
+        if (targetRotation != Vector3.zero)
+        {
+            var t = (Time.time - rotTime) / rotDuration;
+            var rot = Quaternion.Euler(Vector3.Lerp(initialRotation, targetRotation, t));
+            if (t >= .95)
+            {
+                rot = Quaternion.Euler(targetRotation);
+                targetRotation = Vector3.zero;
+            }
+            transform.rotation = rot;
+        }
+    }
+
+    public void ShowStage()
+    {
+        transform.rotation = Quaternion.Euler(initialRotation);
+    }
+
+    public int testStage, testLevel;
+    public bool testHide = false;
+    public void HideStage(int clickedLevel, int clickedStage)
+    {
+        if (clickedLevel > StageInfo.Level)
+        {
+            targetRotation = hideHoriz;
+        }
+        else if (clickedLevel < StageInfo.Level)
+        {
+            targetRotation = -1 * hideHoriz;
+        }
+        else
+        {
+            if (clickedStage < StageInfo.Stage)
+            {
+                targetRotation = -1 * hideVert;
+            }
+            else if (clickedStage > StageInfo.Stage)
+            {
+                targetRotation = hideVert;
+            }
+        }
+        rotTime = Time.time;
     }
 }
