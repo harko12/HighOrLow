@@ -13,6 +13,21 @@ namespace HighOrLow
         private Vector2 baseScale;
         private bool? lastHigher;
 
+        private void OnEnable()
+        {
+            var em = GameReferences.instance.gameEvents;
+            em.OnRoundStart.AddListener(OnRoundStart);
+            em.OnStageStart.AddListener(onStageSetup);
+            em.OnStageEnd.AddListener(OnStageEnd);
+        }
+
+        private void OnDisable()
+        {
+            var em = GameReferences.instance.gameEvents;
+            em.OnRoundStart.RemoveListener(OnRoundStart);
+            em.OnStageStart.RemoveListener(onStageSetup);
+            em.OnStageEnd.RemoveListener(OnStageEnd);
+        }
         // Use this for initialization
         void Start()
         {
@@ -61,22 +76,27 @@ namespace HighOrLow
             myImage.sprite = Pointy;
             myImage.transform.SetPositionAndRotation(myImage.transform.position, Quaternion.Euler(0f, 0f, targetRotation));
         }
-/*
-        public void OnRoundEnd(string eventId, RoundResultInfo roundInfo)
-        {
-            if (lastHigher != null && lastHigher == round.High)
-            {
-                return; // skip if it's not different
-            }
+        /*
+                public void OnRoundEnd(string eventId, RoundResultInfo roundInfo)
+                {
+                    if (lastHigher != null && lastHigher == round.High)
+                    {
+                        return; // skip if it's not different
+                    }
 
-        }
-        */
+                }
+                */
         public void onStageSetup(string eventId)
         {
             lastHigher = null;
             blink = true;
             myImage.sprite = Idle;
             myImage.transform.SetPositionAndRotation(myImage.transform.position, Quaternion.Euler(0f, 0f, 0f));
+        }
+
+        public void OnStageEnd(string eventId, Mission m)
+        {
+            onStageSetup(eventId);
         }
 
     }

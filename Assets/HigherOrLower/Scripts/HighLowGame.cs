@@ -8,105 +8,9 @@ using HarkoGames;
 
 namespace HighOrLow
 {
-
-    /// <summary>
-    /// mission event class
-    /// </summary>
-    [System.Serializable]
-    public class MissionEvent : UnityEvent<string, Mission>
-    {
-    }
-
-    /// <summary>
-    /// mission event class
-    /// </summary>
-    [System.Serializable]
-    public class GameStageEvent : UnityEvent<string, GameStage>
-    {
-    }
-
-    /// <summary>
-    /// Timer update information class
-    /// </summary>
-    public class TimeUpdateInfo
-    {
-        public float RemainingTime { get; set; }
-        public float Progress { get; set; }
-        public bool UseTotalTime { get; set; }
-
-        public void SetValues(float r, float p, bool u)
-        {
-            RemainingTime = r;
-            Progress = p;
-            UseTotalTime = u;
-        }
-    }
-
-    /// <summary>
-    /// Timer update event class
-    /// </summary>
-    [System.Serializable]
-    public class TimerEvent : UnityEvent<string, TimeUpdateInfo>
-    {
-    }
-
-    [System.Serializable]
-    public class TimeAdjustedEvent : UnityEvent<string, float>
-    {
-
-    }
-
-    [System.Serializable]
-    public class RoundResultInfo
-    {
-        public Mission MyMission { get; set; }
-        public FinishState State { get; set; }
-        public float TimeAdjustment { get; set; }
-        public int Round { get; set; }
-        public Wallet RoundLoot { get; set; }
-
-        public RoundResultInfo()
-        {
-
-        }
-
-        public RoundResultInfo(Mission m)
-        {
-            MyMission = m;
-            Reset(0);
-        }
-
-        public void Reset(int round)
-        {
-            Round = round;
-            RoundLoot = new Wallet();
-            State = FinishState.None;
-        }
-    }
-
-    [System.Serializable]
-    public class RoundEndEvent : UnityEvent<string, RoundResultInfo>
-    {
-
-    }
-
-    [System.Serializable]
-    public class RoundStartEvent : UnityEvent<string, GameProgression.GameRound>
-    {
-
-    }
-
-    [System.Serializable]
-    public class MonitoredEvent : UnityEvent<string>
-    {
-
-    }
-
-    public enum FinishState { Right, Wrong, Timeout, Quit, None };
-
     public class HighLowGame : MonoBehaviour
     {
-
+        private GameEventManager eventManager;
         private static HighLowGame mInstance;
         private bool updateTimer;
 
@@ -122,36 +26,17 @@ namespace HighOrLow
 
         public Button ButtonLeft, ButtonMid, ButtonRight;
         public int Round;
+/*
+        private void OnEnable()
+        {
+            var em = GameReferences.instance.gameEvents;
+        }
 
-        [SerializeField]
-        public RoundStartEvent OnRoundStart;
-        private const string OnRoundStartKey = "HighLowGame.OnRoundStart";
-        [SerializeField]
-        public RoundEndEvent OnRoundEnd;
-        private const string OnRoundEndKey = "HighLowGame.OnRoundEnd";
-
-        [SerializeField]
-        public GameStageEvent OnStageClicked;
-        public const string OnStageClickedKey = "HighLowGame.OnStageClicked";
-
-        [SerializeField]
-        public MissionEvent OnMissionChosen;
-        private const string OnMissionChosenKey = "HighLowGame.OnMissionChosen";
-
-        [SerializeField]
-        public MonitoredEvent OnStageStart;
-        private const string OnStageStartKey = "HighLowGame.OnStageStart";
-        [SerializeField]
-        public MissionEvent OnStageEnd;
-        private const string OnStageEndKey = "HighLowGame.OnStageEnd";
-
-        [SerializeField]
-        public TimerEvent OnTimerUpdate;
-        private const string OnTimerUpdateKey = "HighLowGame.OnTimerUpdate";
-        [SerializeField]
-        public TimeAdjustedEvent OnTimeAdjusted;
-        private const string OnTimeAdjustedKey = "HighLowGame.OnTimeAdjusted";
-
+        private void OnDisable()
+        {
+            var em = GameReferences.instance.gameEvents;
+        }
+        */
         public ProgressionPanel ProgressPanel;
         public GameStageContainer Levels;
 
@@ -173,6 +58,7 @@ namespace HighOrLow
 
         private void Awake()
         {
+            eventManager = GameReferences.instance.gameEvents;
             mInstance = this;
         }
 
@@ -251,10 +137,19 @@ namespace HighOrLow
             return m;
         }
 
+        public void GenerateMissions(GamePlayer p, GameStage stage)
+        {
+            var missions = MissionGenerator.GetInstance().GenerateMissions(p, stage, 4);
+            SetCurrentMissions(missions);
+            ProgressPanel.MissionView.ClearMissions();
+            ProgressPanel.MissionView.GenerateMissionsButtons(p, missions);
+            ProgressPanel.MissionView.ToggleMissions();
+        }
+        #region event callers
         public IEnumerator StageClicked(GameStage stage)
         {
-            OnStageClicked.Invoke(OnStageClickedKey, stage);
-            while (EventMonitor.IsRunning(OnStageClickedKey))
+            var key = eventManager.OnStageClickedInvoke(stage);
+            while (EventMonitor.IsRunning(key))
             {
                 yield return null;
             }
@@ -264,19 +159,10 @@ namespace HighOrLow
             yield return null;
         }
 
-        public void GenerateMissions(GamePlayer p, GameStage stage)
-        {
-            var missions = MissionGenerator.GetInstance().GenerateMissions(p, stage, 4);
-            SetCurrentMissions(missions);
-            ProgressPanel.MissionView.ClearMissions();
-            ProgressPanel.MissionView.GenerateMissionsButtons(p, missions);
-            ProgressPanel.MissionView.ToggleMissions();
-        }
-
         public IEnumerator MissionChosen(Mission m)
         {
-            OnMissionChosen.Invoke(OnMissionChosenKey, m);
-            while (EventMonitor.IsRunning(OnMissionChosenKey))
+            var key = eventManager.OnMissionChosenInvoke(m);
+            while (EventMonitor.IsRunning(key))
             {
                 yield return null;
             }
@@ -285,8 +171,8 @@ namespace HighOrLow
 
         public IEnumerator StageStart()
         {
-            OnStageStart.Invoke(OnStageStartKey);
-            while (EventMonitor.IsRunning(OnStageStartKey))
+            var key = eventManager.OnStageStartInvoke();
+            while (EventMonitor.IsRunning(key))
             {
                 yield return null;
             }
@@ -295,18 +181,19 @@ namespace HighOrLow
 
         public IEnumerator StageComplete(Mission m, RoundResultInfo result)
         {
-            OnStageEnd.Invoke(OnStageEndKey, m);
-            while (EventMonitor.IsRunning(OnStageEndKey))
+            var key = eventManager.OnStageEndInvoke(m);
+            while (EventMonitor.IsRunning(key))
             {
                 yield return null;
             }
+            yield return StartCoroutine(RunMissionComplete(key, m));
             yield return null;
         }
 
         public IEnumerator RoundStart(GameProgression.GameRound round)
         {
-            OnRoundStart.Invoke(OnRoundStartKey, round);
-            while (EventMonitor.IsRunning(OnRoundStartKey))
+            var key = eventManager.OnRoundStartInvoke(round);
+            while (EventMonitor.IsRunning(key))
             {
                 yield return null;
             }
@@ -315,8 +202,8 @@ namespace HighOrLow
 
         public IEnumerator RoundComplete(Mission m, RoundResultInfo result)
         {
-            OnRoundEnd.Invoke(OnRoundEndKey, result);
-            while (EventMonitor.IsRunning(OnRoundEndKey))
+            var key = eventManager.OnRoundEndInvoke(result);
+            while (EventMonitor.IsRunning(key))
             {
                 yield return null;
             }
@@ -326,13 +213,14 @@ namespace HighOrLow
 
         public IEnumerator TimerUpdate(TimeUpdateInfo t)
         {
-            OnTimerUpdate.Invoke(OnTimerUpdateKey, t);
-            while (EventMonitor.IsRunning(OnTimerUpdateKey))
+            var key = eventManager.OnTimerUpdateInvoke(t);
+            while (EventMonitor.IsRunning(key))
             {
                 yield return null;
             }
             yield return null;
         }
+        #endregion
 
         public void MissionChosenWrapper(string eventId, Mission m)
         {
@@ -347,11 +235,6 @@ namespace HighOrLow
             yield return new WaitForSeconds(.5f);
             EventMonitor.EndEvent(eventId);
             yield return null;
-        }
-
-        public void MissionComplete(string eventId, Mission m)
-        {
-            StartCoroutine(RunMissionComplete(eventId, m));
         }
 
         public IEnumerator RunMissionComplete(string eventId, Mission m)

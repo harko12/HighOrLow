@@ -20,6 +20,20 @@ namespace HighOrLow
             mComboGroup = GetComponent<CanvasGroup>();
         }
 
+        private void OnEnable()
+        {
+            var em = GameReferences.instance.gameEvents;
+            em.OnRoundEnd.AddListener(OnRoundEnd);
+            em.OnStageStart.AddListener(onStageStart);
+        }
+
+        private void OnDisable()
+        {
+            var em = GameReferences.instance.gameEvents;
+            em.OnRoundEnd.RemoveListener(OnRoundEnd);
+            em.OnStageStart.RemoveListener(onStageStart);
+        }
+
         // Use this for initialization
         void Start()
         {

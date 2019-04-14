@@ -10,6 +10,7 @@ namespace HighOrLow
     public class WalletPanel : MonoBehaviour {
         public WalletValue coinValue, tokenValue, timeValue;
         private Wallet myWallet;
+        public bool ListenToGameEvents;
 
         public string WalletValueDescription()
         {
@@ -19,6 +20,26 @@ namespace HighOrLow
         public void Awake()
         {
             myWallet = new Wallet();
+        }
+
+        private void OnEnable()
+        {
+            if (ListenToGameEvents)
+            {
+                var em = GameReferences.instance.gameEvents;
+                em.OnStageStart.AddListener(onStageStart);
+                em.OnRoundEnd.AddListener(OnRoundEnd);
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (ListenToGameEvents)
+            {
+                var em = GameReferences.instance.gameEvents;
+                em.OnStageStart.RemoveListener(onStageStart);
+                em.OnRoundEnd.RemoveListener(OnRoundEnd);
+            }
         }
 
         /// <summary>

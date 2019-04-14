@@ -19,7 +19,7 @@ namespace HarkoGames.EventSystem
             var newEvent = ScriptableObjectUtility.CreateAsset<GameEvent>("Assets/HarkoGames/EventSystem/Events");
         }
 
-        public void Raise()
+        public void Raise(object[] args)
         {
             for (int lcv = listeners.Count - 1; lcv >= 0; lcv--)
             {

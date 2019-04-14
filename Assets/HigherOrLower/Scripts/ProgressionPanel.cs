@@ -26,6 +26,18 @@ namespace HighOrLow
             mAnim = GetComponent<Animator>();
         }
 
+        private void OnEnable()
+        {
+            var em = GameReferences.instance.gameEvents;
+            em.OnStageClicked.AddListener(onStageClicked);
+        }
+
+        private void OnDisable()
+        {
+            var em = GameReferences.instance.gameEvents;
+            em.OnStageClicked.RemoveListener(onStageClicked);
+        }
+
         public void Init(GameStageContainer levelContainer, GamePlayer p)
         {
             // clear handlers

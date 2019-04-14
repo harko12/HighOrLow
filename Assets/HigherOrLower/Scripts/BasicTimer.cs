@@ -17,6 +17,22 @@ namespace HighOrLow
         {
             textAnim = AdjustmentText.GetComponent<Animator>();
         }
+
+        private void OnEnable()
+        {
+            var em = GameReferences.instance.gameEvents;
+            em.OnRoundEnd.AddListener(OnRoundEnd);
+            em.OnStageStart.AddListener(onStageStart);
+            em.OnTimerUpdate.AddListener(OnTimerUpdate);
+        }
+
+        private void OnDisable()
+        {
+            var em = GameReferences.instance.gameEvents;
+            em.OnRoundEnd.RemoveListener(OnRoundEnd);
+            em.OnStageStart.RemoveListener(onStageStart);
+            em.OnTimerUpdate.RemoveListener(OnTimerUpdate);
+        }
         // Use this for initialization
         void Start()
         {

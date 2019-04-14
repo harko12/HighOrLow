@@ -14,8 +14,20 @@ public class PlayerDebugPanel : MonoBehaviour {
 
     private GamePlayer mPlayer;
 
-	// Use this for initialization
-	void Start () {
+    private void OnEnable()
+    {
+        var em = GameReferences.instance.gameEvents;
+        //        em.OnStageStart.AddListener(EnableControls);
+//        em.OnStageEnd.AddListener(EnableControls);
+    }
+
+    private void OnDisable()
+    {
+        var em = GameReferences.instance.gameEvents;
+    }
+
+    // Use this for initialization
+    void Start () {
         mPlayer = gameMaster.Getplayer();
         UpdateInfo("");
 	}
