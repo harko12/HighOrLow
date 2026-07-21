@@ -45,3 +45,5 @@ HighOrLow\.zip
 
 HighOrLow\.exe
 /Assets/Apex
+/Assets/ThirdPartyPackages*
+/Assets/ThirdPartyPackages/*
